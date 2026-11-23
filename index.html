@@ -619,13 +619,16 @@ function compareInsight(data){
   const spread=high.profile.dup-low.profile.dup;
   const headline=n===2?'Due brani: come cambia la ripetizione':`${n} brani: strategie diverse di ripetizione`;
   const first=spread<.08
-    ?`Nei ${n} brani la quota di versi ripetuti è relativamente simile; cambiano soprattutto posizione e distribuzione dei richiami.`
-    :`Tra tutti i ${n} brani, la quota di versi ripetuti va dal ${percent(low.profile.dup)} di ${name(low)} al ${percent(high.profile.dup)} di ${name(high)}.`;
+    ?`${n===2?'Nei due brani':`Nei ${n} brani`} la quota di versi ripetuti è relativamente simile; cambiano soprattutto posizione e distribuzione dei richiami.`
+    :`${n===2?'Tra i due brani':`Tra i ${n} brani`}, la quota di versi ripetuti va dal ${percent(low.profile.dup)} di ${name(low)} al ${percent(high.profile.dup)} di ${name(high)}.`;
   const second='La sovrapposizione allinea la progressione dei testi: zone dense indicano ripetizioni nelle stesse posizioni relative, non identità di significato.';
   const paragraphs=[];
   paragraphs.push(`Confronto completo (${n} canzoni): ${entries.map(x=>name(x)).join('; ')}.`);
   const researched=entries.filter(x=>x.research.status==='ok'&&x.research.genre?.length);
-  if(researched.length) paragraphs.push('Generi documentati: '+researched.map(x=>`${name(x)} — ${x.research.genre.join(', ')}`).join('; ')+'. Per gli altri brani il genere non è verificato.');
+  if(researched.length){
+    const missing=entries.filter(x=>!researched.includes(x));
+    paragraphs.push('Generi documentati: '+researched.map(x=>`${name(x)} — ${x.research.genre.join(', ')}`).join('; ')+'.'+(missing.length?' Genere non verificato per '+missing.map(x=>name(x)).join(', ')+'.':''));
+  }
   else paragraphs.push('Generi musicali non verificati per questi brani: le differenze qui descritte derivano dal testo, non dall’arrangiamento.');
   paragraphs.push(first);
   // Ogni brano riceve una descrizione distinta, compresi il terzo e i successivi.
@@ -637,7 +640,7 @@ function compareInsight(data){
       (style.length?`Stile del testo: ${style.join(', ')}. `:'')+
       (p.focus.length?`Parole ricorrenti: ${p.focus.slice(0,3).join(', ')}.`:''));
   }
-  if(spread>=.08) paragraphs.push(`In confronto, ${name(high)} punta maggiormente su versi identici; ${name(low)} cambia più spesso la formulazione. Gli altri brani si collocano tra i due estremi, come indicato nelle descrizioni individuali.`);
+  if(spread>=.08) paragraphs.push(`In confronto, ${name(high)} punta maggiormente su versi identici; ${name(low)} cambia più spesso la formulazione.`+(n>2?' Gli altri brani si collocano tra i due estremi, come indicato nelle descrizioni individuali.':''));
   else paragraphs.push('Le percentuali simili non implicano uno stile uguale: possono cambiare lunghezza dei versi, immagini, domande e distanza tra le riprese.');
   paragraphs.push(second+' Questo grafico non misura emozioni, influenze musicali o vicinanza semantica.');
   return {headline,lines:[first,second],paragraphs,research:{genre:[],body:''}};
