@@ -1,0 +1,954 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Shape of Lyrics Studio 8 — Confronto completo</title>
+  <meta name="description" content="Trasforma i testi musicali in diagrammi ad archi, confronta più canzoni ed esporta poster SVG e PNG.">
+  <style>
+    :root { --ui-bg:#0e131b; --panel:#171e28; --panel2:#1c2632; --border:#2c3b4c; --ink:#eaf0f3; --muted:#9cabb9; --accent:#e1b47c; --green:#7dcbba; --radius:17px; }
+    * {box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;background:var(--ui-bg);color:var(--ink);font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;line-height:1.45}
+    button,input,select,textarea{font:inherit}
+    button{cursor:pointer}
+    button:disabled{opacity:.5;cursor:not-allowed}
+    :focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+    .shell{max-width:1720px;margin:auto;padding:24px clamp(14px,2.25vw,40px) 48px}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:22px;margin-bottom:24px;flex-wrap:wrap}
+    .brand{display:flex;align-items:center;gap:14px}
+    .symbol{height:52px;width:52px;border:1px solid #344558;border-radius:16px;display:grid;place-items:center;background:#1c2a38}
+    .symbol svg{width:39px;height:39px}
+    .overline{font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--accent);font-weight:800}
+    .brand h1{font-size:clamp(21px,2.1vw,30px);line-height:1.08;margin:4px 0 0;letter-spacing:-.04em}
+    .top-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .btn{border:1px solid #3a4d60;color:var(--ink);background:#253345;border-radius:11px;padding:10px 14px;min-height:42px;font-weight:650;font-size:13px;transition:background .15s,transform .15s}
+    .btn:hover{background:#314359}
+    .btn-primary{background:#e6b77d;color:#18202b;border-color:#e6b77d}
+    .btn-primary:hover{background:#f2c78e}
+    .btn-plain{background:transparent}
+    .btn-quiet{border-color:transparent;background:transparent;color:var(--muted)}
+    .btn-quiet:hover{color:var(--ink)}
+    .btn-icon{padding:8px 10px;min-width:38px;min-height:38px}
+    .layout{display:grid;grid-template-columns:360px minmax(0,1fr);gap:22px;align-items:start}
+    .sidebar{position:sticky;top:14px;display:grid;gap:14px;max-height:calc(100vh - 25px);overflow-y:auto;padding-right:3px;scrollbar-width:thin}
+    .pane{border:1px solid var(--border);border-radius:var(--radius);background:var(--panel);overflow:hidden}
+    .pane-inner{padding:18px}
+    .pane-heading{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:13px}
+    .pane-heading h2,.pane-heading h3{margin:0;font-size:14px;letter-spacing:.005em}
+    .mini{font-size:11px;color:var(--muted)}
+    .tracklist{display:grid;gap:7px;margin-bottom:12px}
+    .tracktab{display:flex;gap:10px;align-items:center;width:100%;text-align:left;border:1px solid #344455;border-radius:11px;background:#1b2734;color:var(--ink);padding:10px;min-height:58px}
+    .tracktab.selected{border-color:#d7a96c;background:#28323d}
+    .tracktab:hover{background:#2a3746}
+    .trackbar{height:32px;width:4px;border-radius:8px;flex:0 0 4px}
+    .tracktab strong{font-size:13px;display:block;max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .tracktab small{display:block;color:var(--muted);margin-top:2px}
+    .trackrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px;align-items:stretch}
+    .trackrow .tracktab{min-width:0}
+    .trackrow .tracktab strong{max-width:215px}
+    .remove-track{border:1px solid #72444c;background:#40252d;color:#ffe1e4;border-radius:11px;padding:7px 11px;font-size:12px;font-weight:750;min-width:78px}
+    .remove-track:hover{background:#60303b;border-color:#a55f6b}
+    .remove-track:focus-visible{outline:3px solid #f4a7ad}
+    .empty-tracks{font-size:12px;color:var(--muted);padding:12px 6px}
+    .btn-remove-editor{background:#40252d;border:1px solid #72444c;color:#ffe1e4;font-size:11px;min-height:36px}
+    .btn-remove-editor:hover{background:#60303b}
+    .formrow{margin-bottom:12px}
+    .formrow label{font-size:12px;color:#bac8d4;font-weight:650;display:block;margin-bottom:5px}
+    .key-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap}
+    .key-help{font-size:11px;color:var(--muted);margin:1px 0 11px;line-height:1.5}
+    .keyword-list{display:flex;gap:7px;flex-wrap:wrap;min-height:44px;align-items:center}
+    .keyword-chip{display:inline-flex;gap:7px;align-items:center;border:1px solid #456176;border-radius:20px;padding:8px 11px;background:#25394a;color:var(--ink);cursor:pointer;font-size:12px;font-weight:700;line-height:1.1;user-select:none;min-height:38px}
+    .keyword-chip:not(:has(input:checked)){background:#121c27;color:#8497a7;border-color:#344454;opacity:.8}
+    .keyword-chip input{margin:0;accent-color:#e1b47c;width:15px;height:15px;cursor:pointer}
+    .key-actions{display:flex;align-items:center;gap:12px;margin-top:11px}
+    .key-actions button{font-size:11px}
+    .fixed-detail{font-size:12px;color:#e1b47c;font-weight:800;min-width:16px}
+
+    .input,.textarea,.select{display:block;width:100%;border-radius:10px;border:1px solid #425265;background:#101823;color:var(--ink);padding:10px 11px;min-height:40px;outline:none}
+    .input:focus,.textarea:focus,.select:focus{border-color:#e1b47c}
+    .textarea{resize:vertical;min-height:200px;max-height:460px;font-size:12px;line-height:1.58}
+    .two-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .two-fields>div{min-width:0}
+    .editor-footer{display:flex;justify-content:flex-end;align-items:center;flex-wrap:wrap;gap:9px}
+    .overlay-section[hidden]{display:none!important}
+    .subtle-link{border:0;padding:4px;background:none;color:#e8bb8a;font-size:12px;text-decoration:underline;text-underline-offset:2px}
+    .config-row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:12px 0}
+    .config-row label{font-size:12px;color:#d4dfe9;flex:1}
+    .config-row input[type=range]{width:128px;accent-color:#e1b47c}
+    .config-row .value{min-width:24px;text-align:right;font-size:12px;color:#e1b47c}
+    .config-row select{max-width:142px;padding:8px;min-height:36px}
+    .checkline{display:flex;align-items:center;gap:10px;font-size:12px;color:#b9cad6;margin-top:10px}
+    .checkline input{width:16px;height:16px;accent-color:#e1b47c}
+    .tip{font-size:11px;color:#a5b7c7;line-height:1.57;border-top:1px solid #2c3b4c;padding-top:11px;margin-top:12px}
+    .workspace{min-width:0}
+    .intro{display:flex;align-items:end;justify-content:space-between;gap:20px;flex-wrap:wrap;margin:2px 0 17px}
+    .intro h2{font-size:clamp(20px,2vw,27px);margin:3px 0 4px;letter-spacing:-.035em}
+    .intro p{color:var(--muted);margin:0;font-size:13px;max-width:630px}
+    .segmented{display:flex;border:1px solid #405166;border-radius:12px;background:#17212d;padding:4px;gap:3px}
+    .segmented button{border:0;border-radius:8px;background:transparent;color:#a9b9c8;padding:8px 13px;font-size:12px;font-weight:700}
+    .segmented button[aria-pressed=true]{background:#d5a974;color:#18202b}
+    .notice{background:#152331;border:1px solid #2e4150;padding:12px 15px;border-radius:12px;font-size:12px;color:#b8cad9;margin:0 0 15px}
+    .notice strong{color:#e2bf92}
+    .chartgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
+    .chartgrid.single{grid-template-columns:minmax(0,1fr);max-width:780px;margin-inline:auto}
+    .chartcard{background:#f9f9f5;color:#223246;border-radius:15px;overflow:hidden;border:1px solid #57677840;position:relative;box-shadow:0 8px 30px #00000029}
+    .chartcard.dark-chart{background:#0d1a26}
+    .chart-svg{display:block;width:100%;height:auto;touch-action:pan-y;user-select:none}
+    .chart-svg .arc{cursor:pointer;transition:stroke-width .1s,stroke-opacity .1s}
+    .chart-svg .arc:hover,.chart-svg .arc.is-highlight{stroke-width:3.6!important;stroke-opacity:1!important}
+    .chart-svg .arc.is-dim{stroke-opacity:.06!important}
+    .chart-svg .word-dot{cursor:pointer}
+    .chart-meta{padding:12px 18px 14px;background:#faf9f5;border-top:1px solid #dbe3e7;display:flex;gap:7px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+    .chartcard.dark-chart .chart-meta{background:#121f2b;color:#d7e5ed;border-color:#2a4051}
+    .chart-meta p{font-size:11px;max-width:80%;margin:0;color:#60768b}
+    .chartcard.dark-chart .chart-meta p{color:#9fb7c9}
+    .chart-insight{padding:14px 18px 16px;background:#f3f4f2;border-top:1px solid #dce4e8}
+    .chartcard.dark-chart .chart-insight{background:#142331;border-color:#2a4051}
+    .insight-tag{display:block;font-size:10px;font-weight:850;letter-spacing:.15em;text-transform:uppercase;color:#58748a;margin-bottom:5px}
+    .chartcard.dark-chart .insight-tag{color:#98bad0}
+    .chart-insight strong{display:block;font-size:14px;line-height:1.35;letter-spacing:-.01em;color:#1d4156;margin-bottom:5px}
+    .chartcard.dark-chart .chart-insight strong{color:#f2e5d6}
+    .chart-insight p{font-size:12px;line-height:1.55;color:#516779;margin:0}
+    .chartcard.dark-chart .chart-insight p{color:#b3c5d4}
+    .overlay-insight{max-width:710px;margin:10px auto 0;border:1px solid #3b5061;border-radius:12px;background:#1a2a3a;padding:14px 16px}
+    .overlay-insight .insight-tag{color:#a3c1d2}
+    .overlay-insight strong{display:block;font-size:14px;color:#f3e6d9;margin:0 0 5px}
+    .overlay-insight p{font-size:12px;color:#b6cad8;line-height:1.55;margin:0}
+    .chart-meta button{padding:5px 9px;border:1px solid #bac9d1;background:transparent;color:#39556b;border-radius:8px;font-size:11px}
+    .chartcard.dark-chart .chart-meta button{border-color:#425566;color:#cbdee9}
+    .empty{min-height:350px;border:1px dashed #466077;border-radius:15px;display:grid;place-items:center;text-align:center;padding:24px;color:#a4b5c5}
+    .empty strong{color:#dce8ef}
+    .overlay-section{margin-top:18px;border:1px solid var(--border);border-radius:16px;padding:18px;background:#131e2a}
+    .overlay-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:15px;flex-wrap:wrap}
+    .overlay-head h3{font-size:16px;margin:0 0 4px}
+    .overlay-head p{margin:0;font-size:12px;color:#aabac9;max-width:630px}
+    .overlay-actions{display:flex;gap:8px;flex-wrap:wrap}
+    .overlay-visual{max-width:710px;margin:0 auto}
+    .overlay-visual svg{display:block;width:100%;height:auto;border-radius:12px;box-shadow:0 8px 24px #0004}
+    .compare-card{margin-top:17px;border:1px solid var(--border);border-radius:15px;background:var(--panel);padding:18px 18px 10px;overflow:auto}
+    .compare-card h3{margin:0 0 3px;font-size:15px}
+    .compare-card p{margin:0 0 13px;font-size:12px;color:#9eafbf}
+    table{width:100%;border-collapse:collapse;white-space:nowrap;min-width:570px}
+    th{font-size:11px;color:#9cb0c0;font-weight:650;text-align:right;padding:9px 11px;border-bottom:1px solid #344556}
+    th:first-child,td:first-child{text-align:left}
+    td{font-size:12px;padding:10px 11px;border-bottom:1px solid #27384a;text-align:right}
+    tr:last-child td{border-bottom:0}
+    .trackname{display:flex;align-items:center;gap:8px;font-weight:650}
+    .trackdot{height:9px;width:9px;border-radius:100%;display:inline-block;flex-shrink:0}
+    .legend{display:flex;gap:15px;flex-wrap:wrap;color:#9db2c5;font-size:12px;padding:16px 1px 0}
+    .legend i{display:inline-block;width:16px;height:3px;margin-right:6px;vertical-align:middle;border-radius:5px}
+    .footer{color:#71899b;font-size:11px;line-height:1.6;margin-top:18px}
+    .toast{position:fixed;bottom:22px;right:20px;background:#e7bd8e;color:#142030;padding:12px 17px;border-radius:11px;box-shadow:0 6px 24px #0008;font-size:13px;font-weight:700;max-width:min(420px,90vw);z-index:50;opacity:0;transform:translateY(14px);pointer-events:none;transition:.22s}
+    .toast.show{opacity:1;transform:translateY(0)}
+    #projectInput{display:none}
+    @media(max-width:1100px){.layout{grid-template-columns:320px minmax(0,1fr)}.chartgrid{grid-template-columns:1fr}.chartgrid:not(.single) .chartcard{max-width:680px;margin:auto;width:100%}}
+    @media(max-width:520px){.overlay-actions{width:100%}.overlay-actions .btn{flex:1}}
+    @media(max-width:780px){.shell{padding:17px 12px 34px}.layout{grid-template-columns:1fr}.sidebar{position:static;max-height:none;overflow:visible}.topbar{margin-bottom:16px}.top-actions{width:100%}.top-actions .btn{flex:1}.chartgrid{grid-template-columns:1fr}.chartcard{width:100%}.intro{align-items:start}.compare-card{padding:12px 10px}.pane-inner{padding:14px}.chart-meta p{max-width:100%}}
+    @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition:none!important}}
+
+    /* Analisi approfondita: richiusa all'apertura, espandibile da tastiera o touch */
+    .insight-disclosure{margin:0;border:0;padding:0;min-width:0;background:transparent}
+    .insight-disclosure>summary{list-style:none;display:flex;align-items:center;gap:12px;cursor:pointer;padding:17px 18px;background:#f3f4f2;border-top:1px solid #dce4e8;color:#214257;font-weight:750;font-size:13px;min-height:54px}
+    .insight-disclosure>summary::-webkit-details-marker{display:none}
+    .insight-disclosure>summary:before{content:'+';font-size:17px;font-weight:500;width:24px;height:24px;display:grid;place-items:center;border-radius:50%;background:#dfe9e8;color:#325263;flex:none}
+    .insight-disclosure[open]>summary:before{content:'−'}
+    .insight-disclosure>summary .disclosure-note{margin-left:auto;font-size:10px;color:#657c8e;font-weight:600;letter-spacing:.02em}
+    .insight-disclosure[open]>summary{border-bottom:1px solid #d7e4e7}
+    .chartcard.dark-chart .insight-disclosure>summary{background:#142331;color:#f2e5d6;border-color:#2a4051}
+    .chartcard.dark-chart .insight-disclosure>summary:before{background:#294252;color:#e6d8c8}
+    .chartcard.dark-chart .disclosure-note{color:#a2b7ca}
+    .insight-expanded{padding:18px 20px 20px;background:#f3f4f2;color:#3b5163;font-size:13px;line-height:1.64}
+    .chartcard.dark-chart .insight-expanded{background:#142331;color:#c8d9e4}
+    .insight-expanded .insight-headline{display:block;font-weight:800;font-size:16px;letter-spacing:-.016em;color:#16394d;margin-bottom:12px}
+    .chartcard.dark-chart .insight-expanded .insight-headline{color:#f2e5d6}
+    .insight-expanded p{margin:0 0 11px}
+    .insight-expanded p:last-child{margin-bottom:0}
+    .genre-pill{display:inline-block;padding:3px 9px;border-radius:7px;background:#deebe5;color:#254e46;font-weight:800;font-size:11px;margin:0 4px 10px 0}
+    .chartcard.dark-chart .genre-pill{background:#253f45;color:#b7f0df}
+    .source-row{font-size:11px;margin-top:13px;color:#667b89;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .chartcard.dark-chart .source-row{color:#94adbf}
+    .source-row a{color:#376b86;text-decoration:underline;text-underline-offset:2px}
+    .chartcard.dark-chart .source-row a{color:#91caed}
+    .source-row button{background:transparent;border:1px solid currentColor;color:inherit;border-radius:6px;padding:4px 8px;font-size:11px}
+    .genre-muted{font-size:11px;color:#6d8394;display:block;margin-bottom:10px}
+    .chartcard.dark-chart .genre-muted{color:#96b0c4}
+    .overlay-insight{padding:0;overflow:hidden}
+    .overlay-insight .insight-disclosure>summary{background:#1a2a3a;color:#f3e6d9;border-color:#3b5061}
+    .overlay-insight .insight-disclosure>summary:before{background:#314a5a;color:#eef5ff}
+    .overlay-insight .insight-expanded{background:#1a2a3a;color:#c3d6e3}
+    .overlay-insight .insight-headline{color:#f3e6d9}
+    .overlay-insight .genre-pill{background:#2c4c4f;color:#c4f2e1}
+    .overlay-insight .genre-muted{color:#a0b7c8}
+    .overlay-insight .source-row{color:#a0b7c8}
+    @media(max-width:520px){.insight-disclosure>summary{flex-wrap:wrap}.insight-disclosure>summary .disclosure-note{display:none}}
+  </style>
+</head>
+<body>
+<div class="shell">
+  <header class="topbar">
+    <div class="brand">
+      <div class="symbol" aria-hidden="true"><svg viewBox="0 0 42 42" fill="none"><path d="M21 5v32" stroke="#a9bec9" stroke-width="1"/><circle cx="21" cy="21" r="14" stroke="#d5a875" stroke-width="1.5"/><circle cx="21" cy="21" r="8" stroke="#7facc0" stroke-width="1.3"/><circle cx="21" cy="21" r="2.6" fill="#d6ac78"/></svg></div>
+      <div><div class="overline">Visualizzazione musicale / Studio</div><h1>Shape of Lyrics</h1></div>
+    </div>
+    <div class="top-actions">
+      <button class="btn btn-plain" id="btnSaveProject" title="Salva brani e impostazioni come JSON">Salva progetto</button>
+      <button class="btn btn-plain" id="btnLoadProject">Carica progetto</button>
+      <button class="btn btn-plain" id="btnCsv">Dati CSV</button>
+      <button class="btn btn-plain" id="btnSvg">Esporta SVG</button>
+      <button class="btn btn-primary" id="btnPng">↓ Esporta PNG</button>
+    </div>
+  </header>
+  <div class="layout">
+    <aside class="sidebar" aria-label="Impostazioni e testi">
+      <section class="pane"><div class="pane-inner">
+        <div class="pane-heading"><h2>01 / Le canzoni</h2><span class="mini" id="songCount">0 brani</span></div>
+        <div class="tracklist" id="trackTabs"></div>
+        <button class="btn" id="btnAdd" style="width:100%">+ Aggiungi canzone</button>
+      </div></section>
+      <section class="pane" id="editorPane"><div class="pane-inner">
+        <div class="pane-heading"><h2>02 / Testo del brano</h2><button class="btn btn-remove-editor" id="btnRemove" type="button" title="Elimina la canzone selezionata">Elimina</button></div>
+        <div class="two-fields"><div class="formrow"><label for="songTitle">Titolo</label><input class="input" id="songTitle" autocomplete="off" placeholder="Titolo"></div><div class="formrow"><label for="songArtist">Artista</label><input class="input" id="songArtist" autocomplete="off" placeholder="Artista"></div></div>
+        <div class="formrow"><label for="songLyrics">Incolla il testo (un verso per riga)</label><textarea id="songLyrics" class="textarea" spellcheck="false" placeholder="Copia e incolla qui il testo della canzone, mantenendo un verso per riga..."></textarea></div>
+        <div class="formrow">
+          <div class="key-head"><label id="suggestionsLabel">Parole chiave suggerite</label><span class="mini" id="selectedWordsCount">0 selezionate</span></div>
+          <p class="key-help">Selezionate automaticamente dal testo. Deseleziona quelle da non mostrare sul grafico.</p>
+          <div id="keywordSuggestions" class="keyword-list" role="group" aria-labelledby="suggestionsLabel"></div>
+          <div class="key-actions"><button class="subtle-link" type="button" id="btnWordsAll">Seleziona tutte</button><button class="subtle-link" type="button" id="btnWordsNone">Deseleziona tutte</button></div>
+        </div>
+        <div class="editor-footer"><span class="mini" id="editCount">0 parole</span></div>
+      </div></section>
+      <section class="pane"><div class="pane-inner">
+        <div class="pane-heading"><h2>03 / Geometria</h2></div>
+        <div class="config-row"><label>Frase minima <span class="mini">(parole)</span></label><span class="fixed-detail">1</span></div>
+        <div class="config-row"><label for="maxLinks">Numero massimo di cerchi</label><input type="range" id="maxLinks" min="40" max="400" step="20" value="400"><span class="value" id="maxLinksValue">400</span></div>
+        <div class="config-row"><label for="paperTheme">Stile</label><select id="paperTheme" class="select"><option value="paper">Giorno</option><option value="night">Notte</option><option value="colorato">Colorato</option></select></div>
+        <label class="checkline"><input type="checkbox" id="showLines" checked> Collega versi identici</label>
+        <label class="checkline"><input type="checkbox" id="showPhrases" checked> Collega frasi ripetute</label>
+        <label class="checkline"><input type="checkbox" id="showLabels" checked> Evidenzia parole chiave</label>
+        <label class="checkline"><input type="checkbox" id="skipVocals"> Escludi versi di soli vocalizzi</label>
+        <p class="tip">Si parte anche da una sola parola ripetuta, escludendo gli articoli. I cerchi collegano ripetizioni letterali, non significati o emozioni.</p>
+      </div></section>
+    </aside>
+    <main class="workspace">
+      <div class="intro">
+        <div><div class="overline">Dalle parole alla geometria</div><h2>Una canzone lascia una forma.</h2><p>Ogni ripetizione diventa un cerchio. Confronta la struttura dei testi, non il suono: strofe, ritornelli, ricorrenze e distanza tra le parole.</p></div>
+        <div class="segmented" role="group" aria-label="Modalità di visualizzazione"><button id="modeSingle" aria-pressed="false">Un brano</button><button id="modeCompare" aria-pressed="true">Confronta</button></div>
+      </div>
+      <div class="notice">I cerchi collegano <strong>parole e sequenze ripetute</strong> nel testo. La lunghezza verticale è normalizzata per confrontare brani diversi.</div>
+      <div id="chartGrid" class="chartgrid" aria-live="polite"><div class="empty">Preparazione dei grafici...</div></div>
+      <section class="overlay-section" id="overlaySection" hidden>
+        <div class="overlay-head"><div><h3>Sovrapposizione di tutte le canzoni</h3><p>Tutti i collegamenti dei singoli grafici, sulla stessa scala 0–100%. Colori e sfumature distinguono i brani; i punti sull’asse indicano le parole chiave selezionate.</p></div>
+          <div class="overlay-actions"><button class="btn btn-plain" id="btnOverlaySvg" type="button">SVG sovrapposizione</button><button class="btn btn-primary" id="btnOverlayPng" type="button">↓ PNG sovrapposizione</button></div></div>
+        <div id="overlayChart" class="overlay-visual" aria-live="polite"></div>
+        <div id="overlayInsight" class="overlay-insight" aria-live="polite"></div>
+      </section>
+      <section class="compare-card" id="compareSection"><h3>Confronto delle strutture</h3><p>La lettura testuale usa la struttura delle parole e dei versi. Genere e contesto musicale, quando disponibili, vengono ricercati separatamente su Wikipedia. Le percentuali sono calcolate sul testo analizzato. “Versi duplicati” = versi in più rispetto alle righe distinte. “Copertura” = parole appartenenti ad almeno una sequenza ripetuta.</p><div id="compareTable"></div></section>
+      <div class="legend" id="diagramLegend" aria-label="Legenda"><span><i style="background:#507e9b"></i>Parole e sequenze ripetute</span><span><i style="background:#d39955"></i>Versi identici</span><span><i style="background:#d39955;height:7px;width:7px;border-radius:50%"></i>Parole evidenziate</span></div>
+      <div class="footer">Ispirato al metodo degli <em>arc diagrams</em> di Martin Wattenberg, “The Shape of Song” (2001). I grafici vengono calcolati nel browser. Le interpretazioni stilistiche sono indicative e si basano su ripetizioni, lessico e forma dei versi. I testi incollati restano nel browser. Soltanto titolo e artista vengono inviati a Wikipedia per cercare genere e contesto del brano, quando la connessione è disponibile. Usa testi di cui hai i diritti di utilizzo.</div>
+    </main>
+  </div>
+</div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<input id="projectInput" type="file" accept=".json,application/json">
+<script>
+(()=>{
+'use strict';
+const SAMPLE_ORBITA = `Cammino nella luce della sera
+Le strade cambiano colore
+Torno dove tutto comincia
+Una finestra resta aperta
+Sotto la stessa luna
+Sotto la stessa luna
+Il vento porta una risposta
+Ma nessuno la conosce
+Torno dove tutto comincia
+Sotto la stessa luna
+Scivola il tempo nelle mani
+La notte ascolta la città
+Sotto la stessa luna
+Sotto la stessa luna
+Una finestra resta aperta
+Cammino nella luce della sera
+Torno dove tutto comincia
+Torno dove tutto comincia`;
+const SAMPLE_MAREE = `La marea sale piano
+Segna il bordo della sabbia
+Un passo segue un altro passo
+Il mare torna sempre
+Il mare torna sempre
+Tra le voci della riva
+Resta il suono della pioggia
+Un passo segue un altro passo
+La marea sale piano
+Il mare torna sempre
+Il mare torna sempre
+La riva cambia forma
+La marea sale piano
+Tra le voci della riva
+Il mare torna sempre
+Segna il bordo della sabbia
+La marea sale piano
+Il mare torna sempre`;
+const DEFAULT={songs:[{id:'song-example-a',title:'Orbita',artist:'Esempio originale A',lyrics:SAMPLE_ORBITA,keywordsDisabled:[]}, {id:'song-example-b',title:'Maree',artist:'Esempio originale B',lyrics:SAMPLE_MAREE,keywordsDisabled:[]}],selected:'song-example-a',mode:'compare',opts:{minWords:1,maxArcs:400,theme:'paper',lines:true,phrases:true,skipVocals:false,labels:true}};
+const KEYS=['#cd9465','#76adc1','#a38ccb','#81b6a6','#db987a','#b9aa76','#a2bac9','#cca3be','#9caf7c','#88a8bc'];
+let state;
+try{const current=localStorage.getItem('shape-lyrics-studio-v8')||localStorage.getItem('shape-lyrics-studio-v7')||localStorage.getItem('shape-lyrics-studio-v6')||localStorage.getItem('shape-lyrics-studio-v4');const previousV3=localStorage.getItem('shape-lyrics-studio-v3');const older=localStorage.getItem('shape-lyrics-studio-v2')||localStorage.getItem('shape-lyrics-studio-v1');const data=JSON.parse(current||previousV3||older||'null');state=validProject(data)?data:structuredClone(DEFAULT);if(!current&&!previousV3){state.opts.skipVocals=false;if(older&&validProject(data))state.opts.maxArcs=400}}catch{state=structuredClone(DEFAULT)}
+state.opts={...structuredClone(DEFAULT.opts),...state.opts,minWords:1};
+state.opts.maxArcs=Math.max(40,Math.min(400,Number(state.opts.maxArcs)||400));
+if(!['paper','night','colorato'].includes(state.opts.theme))state.opts.theme='paper';
+state.songs=state.songs.map(s=>({id:s.id,title:s.title,artist:s.artist,lyrics:s.lyrics,keywordsDisabled:Array.isArray(s.keywordsDisabled)?s.keywordsDisabled:[]}));
+if(!state.songs.some(s=>s.id===state.selected))state.selected=state.songs[0]?.id||'';
+let toastTimer=null, updateTimer=null, lastCharts=[];
+const expandedInsights=new Set();
+const researchCache=new Map();
+const researchTimers=new Map();
+const WikipediaGenres=[['alternative metal','Alternative metal'],['alternative rock','Rock alternativo'],['pop punk','Pop punk'],['post-punk','Post-punk'],['punk rock','Punk rock'],['indie rock','Indie rock'],['garage rock','Garage rock'],['hard rock','Hard rock'],['soft rock','Soft rock'],['progressive rock','Rock progressivo'],['psychedelic rock','Rock psichedelico'],['folk rock','Folk rock'],['blues rock','Blues rock'],['gothic rock','Rock gotico'],['experimental rock','Rock sperimentale'],['art rock','Art rock'],['pop rock','Pop rock'],['grunge','Grunge'],['post-grunge','Post-grunge'],['new wave','New wave'],['heavy metal','Heavy metal'],['nu metal','Nu metal'],['thrash metal','Thrash metal'],['synth-pop','Synth-pop'],['electropop','Electropop'],['dream pop','Dream pop'],['britpop','Britpop'],['shoegaze','Shoegaze'],['emo','Emo'],['hip hop','Hip hop'],['rap rock','Rap rock'],['trip hop','Trip hop'],['indie pop','Indie pop'],['power pop','Power pop'],['r&b','R&B'],['reggae','Reggae'],['electronica','Elettronica'],['industrial rock','Industrial rock'],['rock','Rock'],['punk','Punk'],['pop','Pop'],['jazz','Jazz'],['blues','Blues'],['folk','Folk'],['country','Country'],['disco','Disco'],['soul','Soul']];
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=n=>new Intl.NumberFormat('it-IT',{maximumFractionDigits:0}).format(n);
+const percent=n=>(100*n).toLocaleString('it-IT',{maximumFractionDigits:1})+'%';
+function notify(message){const el=$('toast');el.textContent=message;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),4000)}
+function validProject(x){return x&&Array.isArray(x.songs)&&x.songs.length>=0&&x.songs.length<=12&&x.songs.every(s=>typeof s.title==='string'&&typeof s.artist==='string'&&typeof s.lyrics==='string'&&typeof s.id==='string'&&(!('keywordsDisabled' in s)||Array.isArray(s.keywordsDisabled)))&&x.opts&&typeof x.mode==='string'&&typeof x.selected==='string'}
+function persist(){try{localStorage.setItem('shape-lyrics-studio-v8',JSON.stringify(state))}catch{}}
+function currentSong(){return state.songs.find(s=>s.id===state.selected)||state.songs[0]}
+function colorFor(i){return OVERLAY_COLORS[i%OVERLAY_COLORS.length]}
+function wordParts(s){return (String(s).normalize('NFKC').toLocaleLowerCase('en-US').match(/[\p{L}\p{N}]+(?:['’][\p{L}\p{N}]+)*/gu)||[]).map(w=>w.replace(/’/g,"'"))}
+function isVocal(line){let w=wordParts(line);return w.length>0&&w.every(t=>/^(?:o+h+|ah+|oh+|mm+|mmm+|doo+|hey+|yey+|yeah+|la+|na+|woo+|whoa+|uh+|hmm+)$/.test(t))}
+function parseLyrics(raw,skipVocals){const rows=raw.replace(/\r/g,'').split('\n');const lines=[];const words=[];
+  for(let orig=0;orig<rows.length;orig++){
+    const line=rows[orig].trim();if(!line)continue;if(skipVocals&&isVocal(line))continue;
+    const tokens=wordParts(line);if(!tokens.length)continue;
+    const start=words.length, lineId=lines.length;
+    tokens.forEach((w,local)=>words.push({word:w,line:lineId,originalLine:orig,local}));
+    lines.push({text:line,normalized:tokens.join(' '),start,end:words.length,len:tokens.length,originalLine:orig});
+  }
+  return {lines,words,rawLineCount:rows.filter(s=>s.trim()).length,ignored:rows.filter(s=>s.trim()&&skipVocals&&isVocal(s)).length};
+}
+// Per gli archi di una sola parola si escludono solo gli articoli.
+const ARTICLES=new Set('a an the il lo la i gli le un uno una l el los las una unos unas der die das ein eine einer einem einen des den dem les le la un une de l'.split(' '));
+// Per le etichette evitiamo parole grammaticali e interiezioni, senza escluderle dalla geometria.
+const KEYWORD_STOP=new Set(`a an the and or but on in by for with from at of to into it its it's i i’m im me my myself we our ours you your yours he she her his they them their that this these those there here is are was were be been being has have had do did does not no oh ah yeah ooh hey hello yeah lol
+il lo la i gli le un uno una l e ed ma o su in con da di del della delle degli dei allo alla all alle al ai a tra fra per che chi come dove quando quale quali cosa non sì si c'è c era sono era eravamo era il lei lui mi ti ci vi noi voi tu io lo loro una uno essere avere questo questi quelle quel sua suo suoi sue mio mia miei mie suo una anche ancora tutto tutti molto poi prima dopo ora allora dove qua che un dei per questo sta hanno il quello quelli davvero sempre invece dentro fuori senza sotto sopra nella nello nei negli nelle nel alla alle agli allo dal dallo dai dalle nella sulla sulle sugli sul sullo sui della dell degli delle dei degli alle
+as so now how why what who where when am will would could should can cant can't just all every ever than then more less one two three out off up down and yes if cause because like got get go come been said your our mine us us why gonna ohh ahh doo yeah ye yey oooo`.split(/\s+/));
+function suggestKeywords(song,opts,parsed){
+  const doc=parsed||parseLyrics(song.lyrics,opts.skipVocals);const frequencies=new Map();
+  for(const t of doc.words){
+    const w=t.word;
+    if(w.length<3||ARTICLES.has(w)||KEYWORD_STOP.has(w)||/^\d+$/.test(w))continue;
+    let entry=frequencies.get(w);if(!entry){entry={word:w,count:0,lines:new Set()};frequencies.set(w,entry)}
+    entry.count++;entry.lines.add(t.line);
+  }
+  return Array.from(frequencies.values()).map(e=>({word:e.word,count:e.count,score:Math.log1p(e.count)*2.1+Math.log1p(e.lines.size)*.9+Math.min(12,e.word.length)*.11+(e.count>1?.65:0)}))
+    .sort((a,b)=>b.score-a.score||b.count-a.count||a.word.localeCompare(b.word)).slice(0,9);
+}
+function analyse(song,opts){
+  const doc=parseLyrics(song.lyrics,opts.skipVocals),n=doc.words.length;
+  const norm=doc.words.map(w=>w.word), lines=doc.lines;
+  const lineMap=new Map(), allArcs=[], coverage=new Uint8Array(n), selectedArcs=[];
+  for(const line of lines){let list=lineMap.get(line.normalized);if(!list){list=[];lineMap.set(line.normalized,list)}list.push(line)}
+  const duplicateLines=lines.length-lineMap.size;
+  const repeatPositions=[];
+  // Cover repeated full lines, regardless of the visual layer selected.
+  for(const list of lineMap.values()){
+    if(list.length<2)continue;
+    for(const line of list)for(let k=line.start;k<line.end;k++)coverage[k]=1;
+    if(opts.lines){for(let i=0;i<list.length;i++){
+      const distances=[1,2,4,8];for(const jump of distances){const j=i+jump;if(j>=list.length)continue;
+        const left=list[i],right=list[j];
+        allArcs.push({type:'line',start:left.start+left.len/2,end:right.start+right.len/2,len:left.len,text:left.text,rank:6+Math.min(18,left.len)*.5+Math.log1p(jump),key:'line:'+left.normalized});
+      }
+    }}
+  }
+  if(n&&opts.minWords<=n){
+    const k=opts.minWords, grams=new Map();
+    for(let i=0;i<=n-k;i++){
+      const arr=norm.slice(i,i+k);if(k===1&&ARTICLES.has(arr[0]))continue;
+      const key=arr.join(' ');let g=grams.get(key);if(!g){g=[];grams.set(key,g)}g.push(i);
+    }
+    for(const [key,positions] of grams.entries()){
+      if(positions.length<2)continue;
+      // Coverage of all occurrences, independent of displayed arcs.
+      for(const p of positions)for(let h=p;h<p+k;h++)coverage[h]=1;
+      if(!opts.phrases)continue;
+      for(let j=0;j<positions.length;j++){
+        const steps=[1,2,4,8];for(const d of steps){if(j+d>=positions.length)continue;
+          const a=positions[j],b=positions[j+d];if(b-a<k)continue;
+          if(a>0&&b>0&&norm[a-1]===norm[b-1])continue; // Maximal left extension.
+          let len=k;while(a+len<b&&b+len<n&&norm[a+len]===norm[b+len]&&len<120)len++;
+          if(len<k)continue;
+          const t=norm.slice(a,a+len).join(' ');const snippet=t.length>75?t.slice(0,72)+'…':t;
+          allArcs.push({type:'phrase',start:a+len/2,end:b+len/2,len,text:snippet,rank:2+Math.min(len,70)*.54+Math.log1p(b-a)*.5,key:'phrase:'+norm.slice(a,a+Math.min(len,15)).join(' ')});
+        }
+      }
+    }
+  }
+  // Remove exact duplicate pairs; group repeated stretches that originate from the same offsets.
+  const seen=new Set();const uniqueArcs=[];
+  for(const a of allArcs){const sig=`${a.type}:${a.start}:${a.end}`;if(seen.has(sig))continue;seen.add(sig);if(a.end<=a.start)continue;uniqueArcs.push(a)}
+  // Ranking deliberately favors repeated blocks, but also keeps broad-distance structures.
+  uniqueArcs.sort((a,b)=>(b.rank-a.rank)||(b.end-b.start)-(a.end-a.start));
+  const usable=uniqueArcs.slice(0,Math.max(40,Math.min(400,opts.maxArcs))).sort((a,b)=>(b.end-b.start)-(a.end-a.start));
+  const suggested=suggestKeywords(song,opts,doc);
+  const disabled=new Set(song.keywordsDisabled||[]);
+  const keywords=makeKeywords(suggested.filter(e=>!disabled.has(e.word)).map(e=>e.word),norm);
+  return {doc,total:n,lineCount:lines.length,duplicateLines,coverage:n?coverage.reduce((a,b)=>a+b,0)/n:0,arcs:usable,possible:uniqueArcs.length,keywords,types:{line:usable.filter(a=>a.type==='line').length,phrase:usable.filter(a=>a.type==='phrase').length}};
+}
+function makeKeywords(words,norm){
+  const out=[];
+  for(const text of words){const parts=wordParts(text);if(parts.length!==1)continue;const word=parts[0],positions=[];
+    for(let i=0;i<norm.length;i++)if(norm[i]===word)positions.push(i+.5);
+    if(positions.length)out.push({text:word.toLocaleUpperCase('it-IT'),positions,count:positions.length,at:positions[Math.floor((positions.length-1)/2)]/Math.max(1,norm.length)});
+  }
+  return out;
+}
+const SVGT={
+  paper:{bg:'#f9f9f5',title:'#19354b',main:'#283f52',muted:'#59778b',rule:'#d3dfe4',circle:'#6289a2',line:'#d59b58',phrase:'#577f9a',dots:'#97adba',mark:'#d18a40'},
+  night:{bg:'#0d1a26',title:'#f3e8da',main:'#dceaf1',muted:'#94b4ca',rule:'#334e62',circle:'#53798f',line:'#e5b37d',phrase:'#78afce',dots:'#54758b',mark:'#f0bb7f'},
+  colorato:{bg:'#0a1021',title:'#f7f5ff',main:'#e4e9ff',muted:'#aab6d2',rule:'#344463',circle:'#6bc9d1',line:'#ffb26e',phrase:'#68caff',dots:'#6785a2',mark:'#f4d65f',palette:['#ff77a8','#63d5ff','#ffca69','#9b92ff','#59dec0','#fb8d70','#b8e36c','#df8ffa','#73aaff']}
+};
+const Y_TOP=176,Y_BOTTOM=738,CX=360;
+function yPosition(v,total){return Y_TOP+Math.max(0,Math.min(1,v/Math.max(total,1)))*(Y_BOTTOM-Y_TOP)}
+function circleSvg(a,meta,c){
+  const y1=yPosition(a.start,meta.total),y2=yPosition(a.end,meta.total),r=Math.max(.15,(y2-y1)/2),center=(y1+y2)/2;
+  let fill=a.type==='line'?c.line:c.phrase;
+  if(c.palette){let h=2166136261;for(const ch of a.key){h=Math.imul(h^ch.charCodeAt(0),16777619)>>>0}fill=c.palette[h%c.palette.length]}
+  const alpha=c.palette?(a.type==='line'?.36:.26):(a.type==='line'?.27:.20);
+  const width=a.type==='line'?1.2:.92;
+  const str=esc(`${a.type==='line'?'Verso identico':'Frase ripetuta'}: ${a.text} • posizioni ${Math.round(a.start)} e ${Math.round(a.end)}`);
+  return `<circle class="arc" data-match="${esc(a.key)}" cx="${CX}" cy="${center.toFixed(3)}" r="${r.toFixed(3)}" fill="${fill}" fill-opacity="${(alpha*.16).toFixed(3)}" stroke="${fill}" stroke-width="${width}" stroke-opacity="${alpha}"><title>${str}</title></circle>`;
+}
+function keywordSVG(kw,meta,c,index,prior){
+  const points=kw.positions.map(p=>yPosition(p,meta.total));const pos=points[Math.floor((points.length-1)/2)];
+  const side=index%2===0?'right':'left',right=side==='right';
+  let ly=Math.max(198,Math.min(738,pos));
+  // Prevent adjacent labels from colliding on each side.
+  while(prior.some(t=>t.side===side&&Math.abs(t.y-ly)<32))ly=Math.min(742,ly+34);
+  if(prior.some(t=>t.side===side&&Math.abs(t.y-ly)<26))ly=Math.max(195,ly-68);
+  prior.push({side,y:ly});
+  const tx=right?531:189,elbow=right?468:252,align=right?'start':'end';
+  const dots=points.map(p=>`<circle cx="${CX}" cy="${p.toFixed(2)}" r="3.5" fill="${c.mark}" stroke="${c.bg}" stroke-width="1.25" class="word-dot"><title>${esc(kw.text)} · ${points.length} occorrenze</title></circle>`).join('');
+  return `<g>${dots}<path d="M ${CX} ${pos.toFixed(2)} L ${elbow} ${pos.toFixed(2)} L ${right?tx-9:tx+9} ${ly.toFixed(2)}" stroke="${c.mark}" stroke-opacity=".62" stroke-width="1" fill="none"/><text x="${tx}" y="${(ly-4).toFixed(2)}" font-size="12" font-weight="800" fill="${c.title}" text-anchor="${align}" font-family="Arial,sans-serif">${esc(kw.text.length>18?kw.text.slice(0,17)+'…':kw.text)}</text><text x="${tx}" y="${(ly+11).toFixed(2)}" font-size="9" fill="${c.muted}" text-anchor="${align}" font-family="Arial,sans-serif">${kw.count} ${kw.count===1?'occorrenza':'occorrenze'}</text></g>`;
+}
+// Analisi di struttura e stile verificabile nel testo; genere musicale soltanto da fonte esterna.
+function styleProfile(meta){
+  const words=meta.doc.words.map(o=>o.word),lines=meta.doc.lines;
+  const dup=meta.lineCount?meta.duplicateLines/meta.lineCount:0;
+  const lens=lines.map(x=>x.len).sort((a,b)=>a-b);
+  const median=lens.length?lens[Math.floor(lens.length/2)]:0;
+  const questionLines=lines.filter(l=>/[?¿]/u.test(l.text)).length;
+  const hasQuestions=questionLines>=2&&questionLines>=lines.length*.055;
+  const addressed=words.filter(w=>['you','your','yours','tu','te','ti','voi','yourself'].includes(w)).length;
+  const first=words.filter(w=>['i','me','my','mine','io','mi','mio','mia','noi','we','our'].includes(w)).length;
+  const personal=first>=3&&first/Math.max(1,words.length)>.025;
+  const direct=addressed>=3&&addressed/Math.max(1,words.length)>.02;
+  const used=new Map();
+  for(const token of words){
+    if(token.length<3||ARTICLES.has(token)||KEYWORD_STOP.has(token)||/^[0-9]+$/.test(token))continue;
+    used.set(token,(used.get(token)||0)+1);
+  }
+  const repeated=[...used].filter(([_,n])=>n>=2).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]));
+  const focus=repeated.slice(0,4).map(([w])=>w);
+  const VISIBLE_WORDS=new Set('sky star stars sun moon cloud clouds light lights shadow shadows black white dark darkness colors colours color colour canvas clay glass picture pictures horizon horizons earth rain wind sea ocean river water trees tree flower flowers street streets city cities night nights eyes eye hands hand body skin faces face window windows air fire strada strade cielo sole luna stelle ombra ombre luce luci notte notti nero nera vetro vetri pioggia vento mare fiume acqua terra mani mano occhi occhio finestra finestre città viso volto'.split(' '));
+  const visualTerms=[...new Set(words.filter(w=>VISIBLE_WORDS.has(w)))];
+  const spans=meta.arcs.map(a=>(a.end-a.start)/Math.max(1,meta.total));
+  const wide=spans.length?spans.filter(v=>v>=.28).length/spans.length:0;
+  const short=spans.length?spans.filter(v=>v<=.1).length/spans.length:0;
+  const uniqueVerses=new Set(lines.map(x=>x.normalized)).size;
+  const lexicalDiversity=words.length?new Set(words).size/words.length:0;
+  return {dup,median,hasQuestions,personal,direct,focus,isLong:median>=9,wide,short,hasVisualImagery:visualTerms.length>=3,visualTerms,hasArcs:spans.length>0,uniqueVerses,lexicalDiversity,questionLines};
+}
+const quoteWords=words=>words.map(w=>'«'+w+'»').join(', ');
+function fold(s){return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^\p{L}\p{N}]+/gu,' ').trim();}
+function researchKey(song){return fold(song.title)+'|'+fold(song.artist)}
+function isExampleSong(song){return /^esempio originale/i.test(song.artist)||!song.title.trim()||!song.artist.trim()||/^nuova canzone$/i.test(song.title)}
+function genreInText(s){
+  let text=String(s||'').toLowerCase().replace(/[-–]/g,'-');
+  const genres=[];
+  for(const [term,label] of WikipediaGenres){
+    const token=term.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+    if(new RegExp('(^|[^a-z])'+token+'(?=[^a-z]|$)','i').test(text))genres.push(label);
+  }
+  // Evita il generico «rock» quando è presente una sottocategoria.
+  if(genres.includes('Rock')&&genres.some(g=>g!=='Rock'&&/rock|grunge/i.test(g)))genres.splice(genres.indexOf('Rock'),1);
+  if(genres.includes('Pop')&&genres.some(g=>g!=='Pop'&&/pop/i.test(g)))genres.splice(genres.indexOf('Pop'),1);
+  if(genres.includes('Punk')&&genres.some(g=>g!=='Punk'&&/punk/i.test(g)))genres.splice(genres.indexOf('Punk'),1);
+  if(genres.includes('Grunge')&&genres.includes('Post-grunge'))genres.splice(genres.indexOf('Grunge'),1);
+  return genres.slice(0,3);
+}
+function wikiInfoboxField(wikitext,name){
+  const head=String(wikitext||'').slice(0,16000);
+  const exp=new RegExp('^\\|\\s*'+name+'\\s*=\\s*([\\s\\S]*?)(?=^\\|\\s*[\\w-]+\\s*=|^\\}\\})','im');
+  return head.match(exp)?.[1]?.trim().slice(0,450)||'';
+}
+function wikiAlbum(wikitext){
+  const field=wikiInfoboxField(wikitext,'album');
+  if(!field)return null;
+  const link=field.match(/\[\[([^\]]+)\]\]/);
+  const name=(link?link[1].split('|').at(-1):field.replace(/\{\{[^}]*\}\}/g,'').replace(/\[\[|\]\]/g,'')).trim();
+  return name&&name.length<=60&&/^[\p{L}\p{N}][\p{L}\p{N} '\-&,():.]+$/u.test(name)?name:null;
+}
+function wikiReleasedYear(wikitext){
+  const field=wikiInfoboxField(wikitext,'released');
+  return field.match(/\b(?:19|20)\d{2}\b/)?.[0]||null;
+}
+function extractGenreFromWikitext(wikitext){
+  // Si legge SOLO il campo genre dell'infobox della voce del brano; mai il genere dell'artista.
+  const begin=String(wikitext||'').slice(0,16000);
+  const m=begin.match(/^\|\s*genre\s*=\s*([\s\S]*?)(?=^\|\s*[\w-]+\s*=|^\}\})/im);
+  if(!m)return [];
+  return genreInText(m[1].slice(0,1100));
+}
+async function wikipediaGet(lang,params){
+  const qs=new URLSearchParams({...params,format:'json',origin:'*'});
+  const endpoint=`https://${lang}.wikipedia.org/w/api.php?${qs.toString()}`;
+  const ac=new AbortController(),id=setTimeout(()=>ac.abort(),9000);
+  try{
+    const resp=await fetch(endpoint,{signal:ac.signal,mode:'cors',credentials:'omit',referrerPolicy:'no-referrer'});
+    if(!resp.ok)throw Error('HTTP '+resp.status);
+    const data=await resp.json();if(data.error)throw Error(data.error.info||'API');return data;
+  }finally{clearTimeout(id)}
+}
+function pickWikiPage(pages,song){
+  const expectedTitle=fold(song.title),expectedArtist=fold(song.artist),candidates=Object.values(pages||{});
+  return candidates.map(p=>{
+    const title=fold(p.title),extract=fold((p.extract||'').slice(0,850));
+    if(!title.includes(expectedTitle)||!extract.includes(expectedArtist))return {p,score:-1};
+    // Esclude pagine di album, band, liste, disambiguazioni e cover eseguite da altri artisti.
+    if(/disambiguation|discography|list of|album by|record label/.test(extract.slice(0,160)))return {p,score:-1};
+    const songEvidence=/\b(song|single|track|brano|canzone|singolo|musical piece)\b/.test(extract.slice(0,600));
+    const titleAligned=title===expectedTitle||title.includes(expectedTitle+' song')||title.includes(expectedTitle+' '+expectedArtist);
+    return {p,score:(songEvidence?5:0)+(titleAligned?4:0)+(title.includes(expectedArtist)?3:0)};
+  }).filter(x=>x.score>=5).sort((a,b)=>b.score-a.score||((a.p.index||99)-(b.p.index||99)))[0]?.p;
+}
+async function searchWikiSong(song){
+  let hadNetwork=false;
+  for(const lang of ['en','it']){
+    try{
+      const q=`\"${song.title.trim()}\" \"${song.artist.trim()}\"`;
+      const query=await wikipediaGet(lang,{action:'query',generator:'search',gsrsearch:q,gsrnamespace:'0',gsrlimit:'6',prop:'extracts',exintro:'1',explaintext:'1',exchars:'1250'});
+      hadNetwork=true;
+      const page=pickWikiPage(query.query?.pages,song);
+      if(!page)continue;
+      const url=`https://${lang}.wikipedia.org/wiki/${encodeURIComponent(page.title.replaceAll(' ','_'))}`;
+      let genre=[],album=null,releaseYear=null;
+      try{
+        const full=await wikipediaGet(lang,{action:'parse',page:page.title,prop:'wikitext'});
+        const wiki=full.parse?.wikitext?.['*']||'';
+        genre=extractGenreFromWikitext(wiki);
+        album=wikiAlbum(wiki);releaseYear=wikiReleasedYear(wiki);
+      }catch{}
+      // Fallback solo quando l'estratto attribuisce esplicitamente il genere AL BRANO.
+      if(!genre.length){
+        const fragment=(page.extract||'').slice(0,620);
+        const explicit=fragment.match(/\b(?:is|was|è|era)\s+(?:an?\s+|un\s+|una\s+)?([\w\s\-/,&]{0,95}?)\b(?:song|single|brano|canzone)\b/i);
+        if(explicit)genre=genreInText(explicit[1]);
+      }
+      const extract=page.extract||'';
+      const yearMatch=extract.match(/\b(?:released|pubblicat[oa]|uscit[oa])\b[^.\n]{0,95}\b((?:19|20)\d{2})\b/i);
+      return {status:'ok',source:'Wikipedia',title:page.title,url,genre,album,year:releaseYear||(yearMatch?yearMatch[1]:null),lang};
+    }catch(e){ if(lang==='it'&&!hadNetwork)return {status:'offline'} }
+  }
+  return {status:'notfound'};
+}
+function scheduleResearch(song,force=false){
+  if(isExampleSong(song))return;
+  const key=researchKey(song);
+  const existing=researchCache.get(key);
+  if(!force&&existing&&(['ok','loading','notfound'].includes(existing.status)||(existing.status==='offline'&&Date.now()-(existing.at||0)<120000)))return;
+  if(researchTimers.has(key))clearTimeout(researchTimers.get(key));
+  const cloned={title:song.title,artist:song.artist};
+  researchTimers.set(key,setTimeout(async()=>{
+    researchTimers.delete(key);
+    researchCache.set(key,{status:'loading',at:Date.now()});updateResearchUI();
+    let result;
+    try{result=await searchWikiSong(cloned)}catch{result={status:'offline'}}
+    researchCache.set(key,{...result,at:Date.now()});updateResearchUI();
+  },force?80:650));
+}
+function webMetadata(song){if(isExampleSong(song))return {status:'example'};return researchCache.get(researchKey(song))||{status:'loading'}}
+function researchText(song){
+  const r=webMetadata(song);
+  if(r.status==='ok')return {status:'ok',genre:r.genre,source:r.url,sourceLabel:r.source,year:r.year,album:r.album,body:(r.genre.length
+    ?'La collocazione musicale è documentata dalla voce dedicata al brano.'
+    :'La voce dedicata al brano è stata trovata, ma non contiene un genere musicale ricavabile con sicurezza.')
+    +(r.album?' Il brano è associato all’album «'+r.album+'».':'')
+    +(r.year?' Anno documentato: '+r.year+'.':'')
+    +' Il genere musicale non determina, da solo, lo stile dei versi o il loro significato.'};
+  if(r.status==='loading')return {status:'loading',genre:[],body:'Ricerca di genere e contesto del brano in corso su Wikipedia…'};
+  if(r.status==='example')return {genre:[],body:'Esempio originale: nessuna classificazione musicale esterna disponibile.'};
+  if(r.status==='offline')return {status:'offline',genre:[],body:'Ricerca web non disponibile ora. L’analisi del testo rimane valida; puoi riprovare quando sei online.'};
+  return {genre:[],body:'Non ho trovato una pagina attendibile dedicata esattamente a questo brano e artista: genere non attribuito.'};
+}
+function songInsight(meta,song){
+  if(!meta.total||!meta.lineCount)return {headline:'Incolla un testo',lines:['La lettura dello stile apparirà qui.'],paragraphs:[],research:{genre:[],body:''}};
+  const p=styleProfile(meta),research=researchText(song),para=[];
+  let headline,first,second;
+  if(p.dup>=.38){headline='Scrittura a ritornelli insistenti';first='Ritornelli e formule tornano numerose volte e rendono la struttura ciclica.'}
+  else if(p.dup>=.16){headline='Strofe e richiami ricorrenti';first='Il testo alterna passaggi variati a versi che ritornano, costruendo un equilibrio tra sviluppo e ripresa.'}
+  else if(p.personal&&p.hasVisualImagery){headline='Una voce personale, raccontata per immagini';first='La prima persona si intreccia a immagini concrete e a richiami che attraversano la canzone.'}
+  else if(p.personal&&p.direct){headline='Un discorso in prima persona, rivolto a qualcuno';first='Il testo unisce la prospettiva di chi parla e il riferimento diretto a un interlocutore.'}
+  else if(p.personal){headline='Un racconto in prima persona';first='L’io narrante guida una scrittura che varia formulazione ma ritorna su alcuni motivi.'}
+  else if(p.hasVisualImagery){headline='Immagini concrete e motivi ricorrenti';first='Immagini visive e richiami lessicali mantengono legate parti diverse del testo.'}
+  else {headline=p.isLong?'Scrittura articolata, con richiami':'Frasi essenziali e ripetizioni';first=p.isLong?'Versi lunghi e variati si alternano a motivi ripresi.':'Versi brevi e ritorni di parole danno un andamento regolare.'}
+  if(p.hasQuestions)first+=' Alcune domande tornano e rendono il discorso incalzante.';
+  if(p.focus.length>=2){second='Le parole '+quoteWords(p.focus.slice(0,3))+' funzionano da fili conduttori.'}
+  else if(p.hasArcs){second=p.wide>=.32?'I richiami collegano anche parti distanti del brano.':'Le riprese sono prevalentemente ravvicinate.'}
+  else {second='Le ripetizioni letterali sono limitate.'}
+  para.push(research.body);
+  if(p.dup>=.38)para.push('La struttura è fortemente basata sulla ripetizione: intere righe tornano più volte e alcune formule si accumulano in sequenze. È una scelta di scrittura che mette in primo piano l’insistenza e la riconoscibilità dei ritornelli, rispetto al cambiamento continuo del lessico.');
+  else if(p.dup>=.16)para.push('La costruzione alterna versi che introducono contenuti nuovi e sezioni che richiamano materiale precedente. L’effetto è quello di un testo che procede per ritorni: gli stessi blocchi diventano punti di riferimento tra passaggi diversi.');
+  else para.push('Il testo usa relativamente pochi versi identici. La continuità deriva soprattutto dalle parole che ritornano e dalle associazioni tra versi differenti. È una struttura più variata che martellante, anche se possono esserci richiami precisi.');
+  if(p.personal&&p.direct)para.push('Il linguaggio usa sia la prima sia la seconda persona: può suonare come un discorso rivolto a qualcuno. '+(p.hasQuestions?'Le domande esplicite accentuano l’andamento interrogativo.':'I cambiamenti fra «io» e «tu» scandiscono l’andamento del testo.'));
+  else if(p.personal)para.push('La presenza dell’io narrante caratterizza il testo. '+(p.hasVisualImagery?'Le immagini ricorrenti aggiungono concretezza a questa prospettiva personale.':'L’andamento è vicino a una voce che racconta o prende posizione.'));
+  else if(p.hasQuestions)para.push('Le domande compaiono più volte: sul piano della forma creano interruzioni e richieste ripetute. Non è possibile stabilire da questo solo dato il sentimento espresso.');
+  else para.push(p.hasVisualImagery?'Il lessico include immagini concrete e visive che collegano parti del brano.':'Il rapporto tra frasi brevi, parole ricorrenti e cambi di formulazione contribuisce al ritmo verbale.');
+  if(p.focus.length){para.push('I termini che ricorrono più spesso e non sono semplici parole grammaticali includono '+quoteWords(p.focus)+'. '+(p.wide>=.28?'Alcuni collegamenti attraversano sezioni distanti del brano.':'Molti collegamenti restano in zone relativamente vicine del testo.'))}
+  para.push('La geometria mostra ripetizioni letterali e disposizione dei richiami. Il genere musicale proviene da una fonte esterna e non è dedotto automaticamente dalle parole.');
+  return {headline,lines:[first,second],paragraphs:para,research};
+}
+function compareInsight(data){
+  const used=data.filter(x=>x.data.lineCount>0);
+  if(used.length<2)return {headline:'Servono almeno due testi',lines:['Aggiungi un altro brano.'],paragraphs:[],research:{genre:[],body:''}};
+  const entries=used.map(({song,data:meta})=>({song,meta,profile:styleProfile(meta),research:webMetadata(song)}));
+  const byDup=[...entries].sort((a,b)=>b.profile.dup-a.profile.dup);
+  const high=byDup[0],low=byDup[byDup.length-1];
+  const name=x=>String(x.song.title||'Senza titolo').trim().slice(0,44);
+  const n=entries.length;
+  const spread=high.profile.dup-low.profile.dup;
+  const headline=n===2?'Due brani: come cambia la ripetizione':`${n} brani: strategie diverse di ripetizione`;
+  const first=spread<.08
+    ?`Nei ${n} brani la quota di versi ripetuti è relativamente simile; cambiano soprattutto posizione e distribuzione dei richiami.`
+    :`Tra tutti i ${n} brani, la quota di versi ripetuti va dal ${percent(low.profile.dup)} di ${name(low)} al ${percent(high.profile.dup)} di ${name(high)}.`;
+  const second='La sovrapposizione allinea la progressione dei testi: zone dense indicano ripetizioni nelle stesse posizioni relative, non identità di significato.';
+  const paragraphs=[];
+  paragraphs.push(`Confronto completo (${n} canzoni): ${entries.map(x=>name(x)).join('; ')}.`);
+  const researched=entries.filter(x=>x.research.status==='ok'&&x.research.genre?.length);
+  if(researched.length) paragraphs.push('Generi documentati: '+researched.map(x=>`${name(x)} — ${x.research.genre.join(', ')}`).join('; ')+'. Per gli altri brani il genere non è verificato.');
+  else paragraphs.push('Generi musicali non verificati per questi brani: le differenze qui descritte derivano dal testo, non dall’arrangiamento.');
+  paragraphs.push(first);
+  // Ogni brano riceve una descrizione distinta, compresi il terzo e i successivi.
+  for(const {song,meta,profile:p} of entries){
+    const structure=p.dup>=.38?'ritornelli molto ripetuti':p.dup>=.16?'strofe alternate a richiami': 'versi prevalentemente variati';
+    const distance=!p.hasArcs?'pochi richiami letterali':p.wide>=.32?'numerosi richiami tra parti lontane':p.short>=.5?'richiami prevalentemente vicini':'richiami distribuiti lungo il testo';
+    const style=[p.personal?'prima persona':null,p.direct?'discorso diretto':null,p.hasQuestions?'domande':null,p.hasVisualImagery?'immagini concrete':null].filter(Boolean);
+    paragraphs.push(`${name({song})}: ${percent(p.dup)} di versi duplicati; ${structure}, ${distance}. `+
+      (style.length?`Stile del testo: ${style.join(', ')}. `:'')+
+      (p.focus.length?`Parole ricorrenti: ${p.focus.slice(0,3).join(', ')}.`:''));
+  }
+  if(spread>=.08) paragraphs.push(`In confronto, ${name(high)} punta maggiormente su versi identici; ${name(low)} cambia più spesso la formulazione. Gli altri brani si collocano tra i due estremi, come indicato nelle descrizioni individuali.`);
+  else paragraphs.push('Le percentuali simili non implicano uno stile uguale: possono cambiare lunghezza dei versi, immagini, domande e distanza tra le riprese.');
+  paragraphs.push(second+' Questo grafico non misura emozioni, influenze musicali o vicinanza semantica.');
+  return {headline,lines:[first,second],paragraphs,research:{genre:[],body:''}};
+}
+function wrapLine(text,max=81){
+  const result=[];let line='';
+  for(const word of String(text).split(/\s+/)){
+    if(line&&(line+' '+word).length>max){result.push(line);line=word}else line=line?line+' '+word:word;
+  }
+  if(line)result.push(line);return result;
+}
+function insightTextLines(insight){
+  const list=[];
+  if(insight.research?.genre?.length)list.push('GENERE: '+insight.research.genre.join(' / ')+(insight.research.year?' · '+insight.research.year:''));
+  for(const para of insight.paragraphs||insight.lines||[]) {list.push(...wrapLine(para,91));list.push('');}
+  if(insight.research?.source)list.push('FONTE: Wikipedia · '+String(insight.research.source).replace(/^https?:\/\//,'').slice(0,84));
+  return list.slice(0,135);
+}
+function svgInsight(insight,y,c){
+  const lines=insightTextLines(insight);
+  return `<path d="M 44 ${y-18} H 676" stroke="${c.rule}" stroke-width="1.2"/>
+    <text x="44" y="${y+2}" font-size="10.5" letter-spacing="2.6" font-weight="800" font-family="Arial,sans-serif" fill="${c.muted}">COSA SI DEDUCE · STILE DEL TESTO</text>
+    <text x="44" y="${y+31}" font-size="16.8" font-weight="750" font-family="Arial,sans-serif" fill="${c.title}">${esc(insight.headline)}</text>
+    ${lines.map((line,i)=>`<text x="44" y="${y+58+i*16}" font-size="11.3" font-family="Arial,sans-serif" fill="${c.muted}">${esc(line||' ')}</text>`).join('')}`;
+}
+function insightHtml(insight,cls='chart-insight',key=''){
+  const research=insight.research||{},isOverlay=cls!=='chart-insight';
+  const known=research.genre?.length?research.genre.map(g=>`<span class="genre-pill">${esc(g)}</span>`).join('')
+    :`<span class="genre-muted">${isOverlay?'Confronto tra strutture testuali':research.body?.startsWith('Ricerca')?'Ricerca genere in corso…':'Genere non verificato'}</span>`;
+  const info=research.source?`<span>Fonte esterna:</span><a href="${esc(research.source)}" target="_blank" rel="noopener noreferrer">Wikipedia · ${esc(research.sourceLabel||'pagina del brano')}</a>`:'';
+  const retry=research.status==='offline'?'<button type="button" data-retry-research>Riprova ricerca</button>':'';
+  const note=key==='overlay'?'Leggi il confronto': 'Leggi l’analisi';
+  return `<details class="insight-disclosure" data-insight-key="${esc(key)}" ${expandedInsights.has(key)?'open':''}><summary><span>Cosa si deduce · ${note}</span><span class="disclosure-note">Espandi / comprimi</span></summary>
+    <div class="insight-expanded"><strong class="insight-headline">${esc(insight.headline)}</strong>${known}
+    ${(insight.paragraphs||insight.lines).map(t=>`<p>${esc(t)}</p>`).join('')}
+    ${info||retry?`<div class="source-row">${info}${retry}</div>`:''}
+    </div></details>`;
+}
+function updateResearchUI(){
+  // Aggiorna il solo pannello: non ricostruire SVG e non chiudere le descrizioni aperte.
+  for(const {song,data} of lastCharts){const card=[...document.querySelectorAll('.chartcard')].find(el=>el.dataset.song===song.id);if(!card)continue;
+    const old=card.querySelector('[data-insight-key]');if(!old)continue;
+    const wrapper=document.createElement('div');wrapper.innerHTML=insightHtml(songInsight(data,song),'chart-insight',song.id);
+    old.replaceWith(wrapper.firstElementChild);
+  }
+  const overlay=$('overlayInsight'),old=overlay.querySelector('[data-insight-key]');if(old){
+    const wrapper=document.createElement('div');wrapper.innerHTML=insightHtml(compareInsight(lastCharts),'overlay-insight-content','overlay');old.replaceWith(wrapper.firstElementChild);
+  }
+}
+function renderSvg(song,meta,opts,index,includeInsight=false){
+  const c=SVGT[opts.theme]||SVGT.paper;
+  const title=esc(song.title.trim()||'Senza titolo'),artist=esc(song.artist.trim()||'Artista sconosciuto'),tSize=song.title.length>26?30:song.title.length>17?37:46;
+  let annotations='';if(opts.labels){const prior=[];annotations=meta.keywords.map((k,i)=>keywordSVG(k,meta,c,i,prior)).join('')}
+  let arcs=meta.arcs.map(a=>circleSvg(a,meta,c)).join('');
+  let baseTicks=Array.from({length:25},(_,i)=>`<circle cx="${CX}" cy="${(Y_TOP+(Y_BOTTOM-Y_TOP)*i/24).toFixed(2)}" r="${i===0||i===24?2.5:1.6}" fill="${c.dots}" fill-opacity=".70"/>`).join('');
+  const svgHeight=includeInsight?Math.max(1220,1000+insightTextLines(songInsight(meta,song)).length*16):900;
+  return `<svg xmlns="http://www.w3.org/2000/svg" class="chart-svg" role="img" aria-label="Diagramma circolare delle ripetizioni del testo di ${esc(song.title)}" viewBox="0 0 720 ${svgHeight}" width="720" height="${svgHeight}">
+  <rect width="720" height="${svgHeight}" fill="${c.bg}"/>
+  <text x="44" y="41" font-family="Arial,sans-serif" font-weight="750" font-size="11" fill="${c.muted}" letter-spacing="4">THE SHAPE OF LYRICS / ${String(index+1).padStart(2,'0')}</text>
+  <text x="44" y="101" font-family="Arial,sans-serif" font-size="${tSize}" font-weight="900" fill="${c.title}" letter-spacing="-1.4">${title.length>32?title.slice(0,31)+'…':title}</text>
+  <text x="45" y="130" font-family="Arial,sans-serif" font-weight="500" font-size="15" fill="${c.muted}" letter-spacing="4">${artist.toLocaleUpperCase('it-IT')}</text>
+  <path d="M ${CX} 158 L ${CX} 760" stroke="${c.rule}" stroke-width="1.6"/>
+  ${arcs}
+  ${baseTicks}
+  ${annotations}
+  <path d="M 44 798 H 676" stroke="${c.rule}" stroke-width="1.4"/>
+  <text x="44" y="823" font-family="Arial,sans-serif" font-weight="800" font-size="13" fill="${c.title}" letter-spacing="1">REPETITION → GEOMETRY</text>
+  <text x="44" y="845" font-family="Arial,sans-serif" font-size="12" fill="${c.muted}">${fmt(meta.lineCount)} versi  ·  ${fmt(meta.total)} parole  ·  ${fmt(meta.arcs.length)} collegamenti</text>
+  <text x="44" y="866" font-family="Arial,sans-serif" font-size="11" fill="${c.muted}">Parole uguali → cerchi. Distanza → diametro.</text>
+  ${includeInsight?svgInsight(songInsight(meta,song),916,c):''}
+  </svg>`;
+}
+const OVERLAY_COLORS=['#f47f9c','#67d2ef','#fbc46c','#ae99f5','#77dda8','#fd9c79','#d4df7d','#f29bd8','#70a9ff','#e7cda7','#a2d5bd','#d6a2ff'];
+function overlayColor(i){return OVERLAY_COLORS[i%OVERLAY_COLORS.length]}
+function renderOverlaySvg(data,opts,includeInsight=false){
+  const c=SVGT[opts.theme]||SVGT.paper;
+  const used=data.filter(x=>x.data.total>0);
+  const marks=[];
+  for(const {song,index,data:meta} of used){
+    // TUTTI i collegamenti presenti nei grafici singoli: nessun campionamento.
+    for(const a of meta.arcs) marks.push({a,song,index,total:meta.total,spread:(a.end-a.start)/meta.total});
+  }
+  marks.sort((x,y)=>y.spread-x.spread);
+  const gradientDefs=used.map(({index})=>{
+    const col=overlayColor(index);
+    return `<radialGradient id="overlay-fill-${index}" cx="48%" cy="45%" r="72%">
+        <stop offset="0%" stop-color="${col}" stop-opacity=".015"/>
+        <stop offset="30%" stop-color="${col}" stop-opacity=".035"/>
+        <stop offset="68%" stop-color="${col}" stop-opacity=".115"/>
+        <stop offset="88%" stop-color="${col}" stop-opacity=".17"/>
+        <stop offset="100%" stop-color="${col}" stop-opacity=".055"/>
+      </radialGradient>
+      <linearGradient id="overlay-stroke-${index}" x1="5%" y1="5%" x2="94%" y2="100%">
+        <stop offset="0%" stop-color="${col}" stop-opacity=".16"/>
+        <stop offset="45%" stop-color="${col}" stop-opacity=".58"/>
+        <stop offset="85%" stop-color="${col}" stop-opacity=".82"/>
+        <stop offset="100%" stop-color="${col}" stop-opacity=".38"/>
+      </linearGradient>`;
+  }).join('');
+  const density=Math.max(1,marks.length/350);
+  // Densità alta: riduce l'opacità dei riempimenti per non perdere i dettagli.
+  const alpha=Math.max(.42,Math.min(1,1/Math.sqrt(density)));
+  const circleSet=marks.map(({a,song,index,total})=>{
+    const y1=yPosition(a.start,total),y2=yPosition(a.end,total),r=Math.max(.15,(y2-y1)/2);
+    const isLine=a.type==='line';
+    return `<circle class="arc" data-match="${esc(song.id+'-'+a.key)}" cx="${CX}" cy="${((y1+y2)/2).toFixed(3)}" r="${r.toFixed(3)}"
+      fill="url(#overlay-fill-${index})" fill-opacity="${(alpha*(isLine?1:.78)).toFixed(3)}"
+      stroke="url(#overlay-stroke-${index})" stroke-width="${(isLine?1.45:1.05).toFixed(2)}"
+      stroke-opacity="${(alpha*(isLine?.78:.61)).toFixed(3)}" ${isLine?'':'stroke-dasharray="2 1.3"'}>
+      <title>${esc(song.title)} · ${esc(a.text)} · ${a.type==='line'?'verso':'sequenza'}</title>
+    </circle>`;
+  }).join('');
+  // Dots from the SAME word positions shown on individual graphs.
+  const words=opts.labels?used.map(({song,index,data:meta})=>{
+    const col=overlayColor(index),x=CX+((index%2===0?1:-1)*(5+Math.floor(index/2)*4));
+    return meta.keywords.flatMap(k=>k.positions.map(p=>`<circle cx="${x}" cy="${yPosition(p,meta.total).toFixed(3)}" r="2.15" fill="${col}" fill-opacity=".88" stroke="${c.bg}" stroke-opacity=".6" stroke-width=".55"><title>${esc(song.title)} · ${esc(k.text)}</title></circle>`)).join('');
+  }).join(''):'';
+  const legend=used.map(({song,index},i)=>{
+    const col=overlayColor(index),x=45+(i%2)*313,y=792+Math.floor(i/2)*31;
+    const keys=opts.labels?data.find(x=>x.index===index)?.data.keywords.slice(0,3).map(k=>k.text).join(' · '):'';
+    return `<circle cx="${x+5}" cy="${y-6}" r="6" fill="${col}" fill-opacity=".93"/>
+      <text x="${x+19}" y="${y-3}" font-size="12" font-weight="700" font-family="Arial,sans-serif" fill="${c.title}">${esc((song.title||'Senza titolo').slice(0,24))}</text>
+      ${keys?`<text x="${x+19}" y="${y+11}" font-size="9" font-family="Arial,sans-serif" fill="${c.muted}">${esc(keys.slice(0,46))}</text>`:''}`;
+  }).join('');
+  const maxLegendRows=Math.ceil(used.length/2);
+  const footerY=Math.max(869,804+maxLegendRows*31+22);
+  const H=Math.max(930,footerY+37)+(includeInsight?(130+insightTextLines(compareInsight(used)).length*16):0);
+  return `<svg xmlns="http://www.w3.org/2000/svg" class="chart-svg overlay-svg" role="img" aria-label="Sovrapposizione dettagliata delle ripetizioni di ${used.length} canzoni" width="720" height="${H}" viewBox="0 0 720 ${H}">
+    <defs>${gradientDefs}</defs>
+    <rect width="720" height="${H}" fill="${c.bg}"/>
+    <text x="44" y="42" font-family="Arial,sans-serif" font-size="11" font-weight="800" letter-spacing="3" fill="${c.muted}">THE SHAPE OF LYRICS / COMPARISON</text>
+    <text x="44" y="99" font-family="Arial,sans-serif" font-size="36" font-weight="900" fill="${c.title}">SOVRAPPOSIZIONE</text>
+    <text x="45" y="130" font-family="Arial,sans-serif" font-size="12" fill="${c.muted}">STESSI ARCHI · STESSA SCALA · SFUMATURE SOVRAPPOSTE</text>
+    <path d="M ${CX} 158 L ${CX} 760" stroke="${c.rule}" stroke-width="1.6"/>
+    ${circleSet}
+    ${Array.from({length:25},(_,i)=>`<circle cx="${CX}" cy="${(Y_TOP+(Y_BOTTOM-Y_TOP)*i/24).toFixed(3)}" r="1.45" fill="${c.muted}" fill-opacity=".4"/>`).join('')}
+    ${words}
+    <path d="M 44 763 H 676" stroke="${c.rule}" stroke-width="1"/>
+    ${legend}
+    <path d="M 44 ${footerY-17} H 676" stroke="${c.rule}" stroke-width="1"/>
+    <text x="44" y="${footerY+7}" font-family="Arial,sans-serif" font-size="12" fill="${c.muted}">${fmt(used.length)} brani · ${fmt(marks.length)} archi completi · ${opts.labels?'parole chiave indicate':'solo ripetizioni'}</text>
+    ${includeInsight?svgInsight(compareInsight(used),footerY+40,c):''}
+  </svg>`;
+}
+function renderTabs(){
+  const holder=$('trackTabs');
+  holder.innerHTML=state.songs.length?state.songs.map((s,i)=>`<div class="trackrow">
+    <button type="button" class="tracktab ${s.id===state.selected?'selected':''}" data-id="${esc(s.id)}" aria-pressed="${s.id===state.selected}"><i class="trackbar" style="background:${colorFor(i)}"></i><span style="min-width:0"><strong>${esc(s.title||'Senza titolo')}</strong><small>${esc(s.artist||'Artista non indicato')}</small></span></button>
+    <button type="button" class="remove-track" data-remove-id="${esc(s.id)}" aria-label="Elimina ${esc(s.title||'questa canzone')}" title="Elimina questa canzone">Elimina</button>
+    </div>`).join(''):'<div class="empty-tracks">Non ci sono canzoni. Premi «Aggiungi canzone» per iniziare.</div>';
+  $('songCount').textContent=state.songs.length+' '+(state.songs.length===1?'brano':'brani');
+}
+function renderEditor(){
+  const s=currentSong();
+  $('editorPane').hidden=!s;
+  if(!s)return;
+  $('songTitle').value=s.title;$('songArtist').value=s.artist;$('songLyrics').value=s.lyrics;
+  $('editCount').textContent=wordParts(s.lyrics).length+' parole (testo originale)';
+  $('btnRemove').disabled=false;
+  renderKeywords();
+}
+function renderKeywords(){
+  const song=currentSong(),words=suggestKeywords(song,state.opts),disabled=new Set(song.keywordsDisabled||[]);
+  $('keywordSuggestions').innerHTML=words.length?words.map(e=>`<label class="keyword-chip"><input type="checkbox" data-keyword="${esc(e.word)}" ${disabled.has(e.word)?'':'checked'}><span>${esc(e.word.toLocaleUpperCase('it-IT'))}</span></label>`).join(''):'<span class="mini">Incolla un testo per vedere le parole suggerite.</span>';
+  const selected=words.filter(e=>!disabled.has(e.word)).length;
+  $('selectedWordsCount').textContent=selected+' di '+words.length+' selezionate';
+  $('btnWordsAll').disabled=!words.length||selected===words.length;
+  $('btnWordsNone').disabled=!words.length||selected===0;
+}
+function renderOptions(){
+  $('maxLinks').value=state.opts.maxArcs;$('maxLinksValue').textContent=state.opts.maxArcs;
+  $('paperTheme').value=state.opts.theme;
+  $('showLines').checked=state.opts.lines;$('showPhrases').checked=state.opts.phrases;
+  $('skipVocals').checked=state.opts.skipVocals;$('showLabels').checked=state.opts.labels;
+  $('modeSingle').setAttribute('aria-pressed',state.mode==='single');$('modeCompare').setAttribute('aria-pressed',state.mode==='compare');
+}
+function getVisualSongs(){return state.mode==='single'?(currentSong()?[currentSong()]:[]):state.songs}
+function renderCharts(){
+  const visible=getVisualSongs(),grid=$('chartGrid');lastCharts=visible.map((s)=>({song:s,index:state.songs.indexOf(s),data:analyse(s,state.opts)}));
+  grid.className='chartgrid'+(state.mode==='single'?' single':'');
+  grid.innerHTML=lastCharts.map(({song,index,data})=>{
+    if(data.total===0)return `<div class="empty"><div><strong>${esc(song.title||'Senza titolo')}</strong><br>Inserisci il testo per creare il diagramma.</div></div>`;
+    const svg=renderSvg(song,data,state.opts,index);
+    return `<article class="chartcard ${state.opts.theme!=='paper'?'dark-chart':''}" data-song="${esc(song.id)}">${svg}${insightHtml(songInsight(data,song),'chart-insight',song.id)}<div class="chart-meta"><p>${data.ignored?'Vocalizzi esclusi: '+data.ignored+' · ':''}${data.arcs.length<data.possible?'Mostrati '+data.arcs.length+' di '+data.possible+' collegamenti · ':''}Posizioni normalizzate da 0% a 100%</p><button type="button" data-download-song="${esc(song.id)}">PNG</button></div></article>`;
+  }).join('') || '<div class="empty"><div><strong>Nessuna canzone</strong><br>Aggiungi un brano e incolla il testo per generare il grafico.</div></div>';
+  $('diagramLegend').innerHTML=state.opts.theme==='colorato'
+    ?'<span><i style="background:linear-gradient(90deg,#ff77a8,#63d5ff,#ffca69,#9b92ff,#59dec0)"></i>Colori = sequenze ripetute</span><span><i style="background:#f4d65f;height:7px;width:7px;border-radius:50%"></i>Parole evidenziate</span>'
+    :'<span><i style="background:#507e9b"></i>Parole e sequenze ripetute</span><span><i style="background:#d39955"></i>Versi identici</span><span><i style="background:#d39955;height:7px;width:7px;border-radius:50%"></i>Parole evidenziate</span>';
+  const hasOverlay=state.mode==='compare'&&state.songs.length>1&&lastCharts.filter(x=>x.data.total>0).length>1;
+  $('overlaySection').hidden=!hasOverlay;
+  $('overlayChart').innerHTML=hasOverlay?renderOverlaySvg(lastCharts,state.opts):'';
+  $('overlayInsight').innerHTML=hasOverlay?insightHtml(compareInsight(lastCharts),'overlay-insight-content','overlay'):'';
+  $('compareSection').style.display=state.mode==='compare'&&state.songs.length>1?'block':'none';
+  if(state.mode==='compare'&&state.songs.length>1){
+    const rows=lastCharts.map(({song,index,data})=>`<tr><td><span class="trackname"><i class="trackdot" style="background:${colorFor(index)}"></i>${esc(song.title||'Senza titolo')}</span></td><td>${fmt(data.lineCount)}</td><td>${fmt(data.total)}</td><td>${percent(data.lineCount?data.duplicateLines/data.lineCount:0)}</td><td>${percent(data.coverage)}</td><td>${fmt(data.arcs.length)}</td></tr>`).join('');
+    $('compareTable').innerHTML=`<table><thead><tr><th>Canzone</th><th>Versi</th><th>Parole</th><th>Versi duplicati</th><th>Copertura</th><th>Cerchi visibili</th></tr></thead><tbody>${rows}</tbody></table>`;
+  }
+  for(const song of visible)scheduleResearch(song);
+}
+function refreshAll(){renderTabs();renderEditor();renderOptions();renderCharts()}
+function refreshSoon(){clearTimeout(updateTimer);persist();updateTimer=setTimeout(()=>{renderKeywords();renderCharts()},200)}
+function deleteSong(id){
+  const idx=state.songs.findIndex(song=>song.id===id);
+  if(idx<0)return;
+  const song=state.songs[idx];
+  if(!window.confirm(`Eliminare «${song.title||'Senza titolo'}» dal progetto?`))return;
+  state.songs.splice(idx,1);
+  // Elimina eventuali analisi espanse e ricerche pendenti associate al brano.
+  expandedInsights.delete(id);
+  const key=researchKey(song);
+  if(researchTimers.has(key)){clearTimeout(researchTimers.get(key));researchTimers.delete(key)}
+  if(state.selected===id || !state.songs.some(s=>s.id===state.selected)){
+    state.selected=state.songs[Math.min(idx,state.songs.length-1)]?.id||'';
+  }
+  persist();refreshAll();notify('Canzone eliminata dal progetto');
+}
+function createSong(){if(state.songs.length>=12){notify('Massimo 12 canzoni per progetto.');return}
+  let id='song-'+Date.now()+'-'+Math.floor(Math.random()*1e6);
+  state.songs.push({id,title:'Nuova canzone',artist:'',lyrics:'',keywordsDisabled:[]});state.selected=id;
+  persist();refreshAll();$('songTitle').focus();if(window.innerWidth<780)$('editorPane').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function setSongField(key,value){currentSong()[key]=value;
+  if(key==='title'||key==='artist')renderTabs();
+  if(key==='lyrics')$('editCount').textContent=wordParts(value).length+' parole (testo originale)';
+  refreshSoon();
+}
+function download(blob,name){const a=document.createElement('a'),url=URL.createObjectURL(blob);a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000)}
+function slug(s){return String(s||'canzone').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^\w-]+/g,'_').replace(/^_+|_+$/g,'').slice(0,55)||'canzone'}
+function svgFileFor(onlyId,overlayOnly=false){
+  let data=onlyId?lastCharts.filter(d=>d.song.id===onlyId):lastCharts;
+  if(!data.length||data.some(d=>!d.data.total)){notify('Inserisci prima un testo in ogni canzone visualizzata.');return null}
+  if(overlayOnly){if(data.length<2){notify('Servono almeno due canzoni per la sovrapposizione.');return null}return renderOverlaySvg(data,state.opts,true)}
+  if(data.length===1){return renderSvg(data[0].song,data[0].data,state.opts,data[0].index,true).replace('class="chart-svg"','class="chart-svg"')}
+  const cols=Math.min(data.length,2),rows=Math.ceil(data.length/cols),gap=35,margin=44,top=105,itemH=Math.max(...data.map(({song,data:meta})=>Math.max(1220,1000+insightTextLines(songInsight(meta,song)).length*16))),W=margin*2+cols*720+(cols-1)*gap,overlaySvg=renderOverlaySvg(data,state.opts,true),overlayH=+(overlaySvg.match(/height="(\d+)"/)||[])[1]||1260,H=top+rows*itemH+rows*gap+overlayH+45;
+  const c=SVGT[state.opts.theme];let inner='';
+  for(let i=0;i<data.length;i++){
+    const {song,index,data:meta}=data[i],x=margin+(i%cols)*(720+gap),y=top+Math.floor(i/cols)*(itemH+gap);
+    inner+=`<g transform="translate(${x},${y})">${renderSvg(song,meta,state.opts,index,true)}</g>`;
+  }
+  inner+=`<g transform="translate(${(W-720)/2},${top+rows*itemH+rows*gap})">${overlaySvg}</g>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><rect width="${W}" height="${H}" fill="${c.bg}"/><text x="${margin}" y="47" font-family="Arial,sans-serif" font-weight="800" fill="${c.title}" font-size="30">THE SHAPE OF LYRICS</text><text x="${margin}" y="74" font-family="Arial,sans-serif" fill="${c.muted}" font-size="15">CONFRONTO DELLE STRUTTURE TESTUALI</text>${inner}</svg>`;
+}
+function downloadSvg(onlyId,overlayOnly=false){const xml=svgFileFor(onlyId,overlayOnly);if(!xml)return;
+  download(new Blob([xml],{type:'image/svg+xml;charset=utf-8'}),(overlayOnly?'Shape_of_Lyrics_SOVRAPPOSIZIONE':onlyId?slug(lastCharts.find(x=>x.song.id===onlyId).song.title):'Shape_of_Lyrics_confronto')+'.svg');notify('SVG esportato');
+}
+async function downloadPng(onlyId,overlayOnly=false){const xml=svgFileFor(onlyId,overlayOnly);if(!xml)return;
+  const dims=xml.match(/<svg[^>]*width="(\d+)" height="(\d+)"/);if(!dims){notify('Impossibile leggere le dimensioni del grafico');return}
+  const w=+dims[1],h=+dims[2],requestedScale=overlayOnly||onlyId||lastCharts.length===1?2600/720:3600/w;
+  const scale=Math.min(requestedScale,15000/Math.max(w,h),Math.sqrt(45000000/(w*h)));
+  const canvas=document.createElement('canvas');canvas.width=Math.round(w*scale);canvas.height=Math.round(h*scale);
+  const image=new Image(),blob=new Blob([xml],{type:'image/svg+xml;charset=utf-8'}),url=URL.createObjectURL(blob);
+  try{await new Promise((resolve,reject)=>{image.onload=resolve;image.onerror=reject;image.src=url});const ctx=canvas.getContext('2d');if(!ctx)throw Error('Canvas non disponibile');ctx.drawImage(image,0,0,canvas.width,canvas.height);
+    const output=await new Promise(res=>canvas.toBlob(res,'image/png',1));if(!output)throw Error('Esportazione non riuscita');
+    download(output,(overlayOnly?'Shape_of_Lyrics_SOVRAPPOSIZIONE':onlyId?slug(lastCharts.find(x=>x.song.id===onlyId).song.title):lastCharts.length===1?slug(lastCharts[0].song.title):'Shape_of_Lyrics_CONFRONTO')+'.png');notify(`PNG esportato · ${canvas.width} × ${canvas.height} px`);
+  }catch(err){notify('Errore PNG: prova a esportare SVG. '+err.message)}finally{URL.revokeObjectURL(url)}
+}
+function csvQ(v){return '"'+String(v??'').replaceAll('"','""')+'"'}
+function downloadCsv(){if(!lastCharts.length){notify('Nessun brano disponibile.');return}
+  const rows=[['brano','artista','tipo_legame','sequenza_identica','posizione_a_parole','posizione_b_parole','posizione_a_%','posizione_b_%','lunghezza_parole','note']];
+  for(const {song,data} of lastCharts){for(const a of data.arcs)rows.push([song.title,song.artist,a.type,a.text,a.start.toFixed(2),a.end.toFixed(2),(a.start*100/Math.max(1,data.total)).toFixed(3),(a.end*100/Math.max(1,data.total)).toFixed(3),a.len,'Posizioni del centro delle occorrenze, in token']);}
+  download(new Blob(['\ufeff'+rows.map(x=>x.map(csvQ).join(';')).join('\r\n')],{type:'text/csv;charset=utf-8'}),'Shape_of_Lyrics_legami.csv');notify('CSV dei collegamenti esportato')}
+function saveProject(){download(new Blob([JSON.stringify({version:8,...state},null,2)],{type:'application/json;charset=utf-8'}),'Shape_of_Lyrics_progetto.json');notify('Progetto salvato')}
+async function loadProject(file){try{const data=JSON.parse(await file.text());if(!validProject(data))throw Error('Struttura non riconosciuta');
+  const opts={...structuredClone(DEFAULT.opts),...data.opts,minWords:1};opts.maxArcs=Math.max(40,Math.min(400,Number(opts.maxArcs)||400));opts.theme=['night','paper','colorato'].includes(opts.theme)?opts.theme:'paper';
+  state={songs:data.songs.map(s=>({id:s.id,title:s.title,artist:s.artist,lyrics:s.lyrics,keywordsDisabled:Array.isArray(s.keywordsDisabled)?s.keywordsDisabled:[]})),selected:data.selected,mode:data.mode==='single'?'single':'compare',opts};
+  if(!state.songs.some(s=>s.id===state.selected))state.selected=state.songs[0]?.id||'';
+  persist();refreshAll();notify('Progetto importato');
+  }catch(err){notify('Errore nel progetto: '+err.message)}}
+function connectEvents(){
+  $('trackTabs').addEventListener('click',e=>{
+    const remove=e.target.closest('[data-remove-id]');
+    if(remove){deleteSong(remove.dataset.removeId);return}
+    const tab=e.target.closest('[data-id]');if(!tab)return;
+    state.selected=tab.dataset.id;persist();renderTabs();renderEditor();if(state.mode==='single')renderCharts();
+  });
+  $('btnAdd').addEventListener('click',createSong);
+  $('btnRemove').addEventListener('click',()=>deleteSong(state.selected));
+  [['songTitle','title'],['songArtist','artist'],['songLyrics','lyrics']].forEach(([id,key])=>$(id).addEventListener('input',e=>setSongField(key,e.target.value)));
+  $('keywordSuggestions').addEventListener('change',e=>{
+    const input=e.target.closest('input[data-keyword]');if(!input)return;
+    const song=currentSong(),disabled=new Set(song.keywordsDisabled||[]),word=input.dataset.keyword;
+    if(input.checked)disabled.delete(word);else disabled.add(word);
+    song.keywordsDisabled=[...disabled];refreshSoon();
+  });
+  $('btnWordsAll').addEventListener('click',()=>{currentSong().keywordsDisabled=[];refreshSoon()});
+  $('btnWordsNone').addEventListener('click',()=>{
+    const s=currentSong();s.keywordsDisabled=[...new Set([...(s.keywordsDisabled||[]),...suggestKeywords(s,state.opts).map(x=>x.word)])];refreshSoon();
+  });
+  $('modeSingle').addEventListener('click',()=>{state.mode='single';persist();renderOptions();renderCharts()});
+  $('modeCompare').addEventListener('click',()=>{state.mode='compare';persist();renderOptions();renderCharts()});
+  $('maxLinks').addEventListener('input',e=>{state.opts.maxArcs=Number(e.target.value);$('maxLinksValue').textContent=e.target.value;refreshSoon()});
+  $('paperTheme').addEventListener('change',e=>{state.opts.theme=e.target.value;refreshSoon()});
+  [['showLines','lines'],['showPhrases','phrases'],['skipVocals','skipVocals'],['showLabels','labels']].forEach(([id,key])=>$(id).addEventListener('change',e=>{state.opts[key]=e.target.checked;refreshSoon()}));
+  $('btnPng').addEventListener('click',()=>downloadPng());$('btnSvg').addEventListener('click',()=>downloadSvg());$('btnCsv').addEventListener('click',downloadCsv);
+  $('btnSaveProject').addEventListener('click',saveProject);$('btnLoadProject').addEventListener('click',()=>$('projectInput').click());
+  $('projectInput').addEventListener('change',async e=>{if(e.target.files[0])await loadProject(e.target.files[0]);e.target.value='' });
+  $('btnOverlayPng').addEventListener('click',()=>downloadPng(null,true));
+  $('btnOverlaySvg').addEventListener('click',()=>downloadSvg(null,true));
+  document.addEventListener('toggle',e=>{const d=e.target.closest?.('details[data-insight-key]');if(!d)return;const key=d.dataset.insightKey;if(d.open)expandedInsights.add(key);else expandedInsights.delete(key)},true);
+  document.addEventListener('click',e=>{const b=e.target.closest?.('[data-retry-research]');if(!b)return;const card=b.closest('[data-song]');if(!card)return;const song=state.songs.find(x=>x.id===card.dataset.song);if(song){researchCache.delete(researchKey(song));scheduleResearch(song,true);updateResearchUI()}});
+  $('chartGrid').addEventListener('click',e=>{
+    const downloadBtn=e.target.closest('[data-download-song]');if(downloadBtn){downloadPng(downloadBtn.dataset.downloadSong);return}
+    const arc=e.target.closest('circle.arc');if(!arc)return;
+    const svg=arc.ownerSVGElement;if(!svg)return;
+    const active=arc.classList.contains('is-highlight'),key=arc.dataset.match;
+    svg.querySelectorAll('circle.arc').forEach(x=>{x.classList.toggle('is-highlight',!active&&x.dataset.match===key);x.classList.toggle('is-dim',!active&&x.dataset.match!==key)});
+    if(!active){const title=arc.querySelector('title');if(title)notify(title.textContent)}
+  });
+}
+connectEvents();refreshAll();
+})();
+</script>
+</body>
+</html>
