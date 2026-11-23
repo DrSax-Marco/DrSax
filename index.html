@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="dark">
-  <title>Shape of Lyrics Studio 8 — Confronto completo</title>
+  <title>Shape of Lyrics Studio 9 — Coordinate circolari</title>
   <meta name="description" content="Trasforma i testi musicali in diagrammi ad archi, confronta più canzoni ed esporta poster SVG e PNG.">
   <style>
     :root { --ui-bg:#0e131b; --panel:#171e28; --panel2:#1c2632; --border:#2c3b4c; --ink:#eaf0f3; --muted:#9cabb9; --accent:#e1b47c; --green:#7dcbba; --radius:17px; }
@@ -183,6 +183,24 @@
     .overlay-insight .genre-muted{color:#a0b7c8}
     .overlay-insight .source-row{color:#a0b7c8}
     @media(max-width:520px){.insight-disclosure>summary{flex-wrap:wrap}.insight-disclosure>summary .disclosure-note{display:none}}
+    .coordinate-section{margin-top:18px;border:1px solid var(--border);border-radius:16px;background:#14202d;padding:19px 20px 20px}
+    .coordinate-heading{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:13px;margin-bottom:16px}
+    .coordinate-heading h3{font-size:18px;margin:2px 0 5px;color:#f2e7d9}
+    .coordinate-heading p{font-size:12px;max-width:680px;margin:0;color:#a9bed0;line-height:1.55}
+    .coordinate-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+    .coordinate-panel{border:1px solid #34465a;background:#0e1b29;border-radius:13px;padding:13px;min-width:0}
+    .coordinate-panel h4{color:#f5e8d6;margin:3px 0 3px;font-size:14px}
+    .coordinate-panel .mini{line-height:1.5}
+    .coordinate-panel svg{width:100%;max-width:520px;height:auto;display:block;margin:8px auto 1px}
+    .coordinate-legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:7px;min-height:25px}
+    .coordinate-legend span{font-size:11px;color:#c5d7e2;display:inline-flex;align-items:center;gap:6px;max-width:100%}
+    .coordinate-legend i{width:9px;height:9px;border-radius:50%;display:inline-block;flex:0 0 9px}
+    .coordinate-note{border-top:1px solid #334b5d;margin-top:12px;padding-top:10px;color:#9bb6c9;font-size:11px;line-height:1.55}
+    .coordinate-actions{display:flex;gap:8px;flex-wrap:wrap}
+    .coordinate-actions .btn{font-size:11px;padding:8px 10px;min-height:34px}
+    @media(max-width:1200px){.coordinate-grid{grid-template-columns:1fr}}
+    .coordinate-legend a{color:#acd8ed;text-decoration:underline;text-underline-offset:2px}
+
   </style>
 </head>
 <body>
@@ -244,6 +262,21 @@
         <div id="overlayChart" class="overlay-visual" aria-live="polite"></div>
         <div id="overlayInsight" class="overlay-insight" aria-live="polite"></div>
       </section>
+      <section class="coordinate-section" id="coordinateSection" aria-label="Coordinate circolari di musica e testo">
+        <div class="coordinate-heading">
+          <div><div class="overline">04 / Coordinate circolari</div><h3>Due mappe: musica e testo</h3>
+            <p>Ogni canzone è un punto. Le etichette sui lati opposti sono <strong>contrasti convenzionali</strong>, non generi incompatibili. I dati musicali provengono da fonti esterne; quelli testuali dal testo incollato.</p></div>
+          <div class="coordinate-actions"><button class="btn btn-plain" id="btnMapsSvg" type="button">SVG mappe</button><button class="btn btn-plain" id="btnMapsPng" type="button">PNG mappe</button></div>
+        </div>
+        <div class="coordinate-grid">
+          <div class="coordinate-panel"><h4>Musica · generi documentati</h4><div class="mini">Titolo e artista → Wikipedia → generi del singolo brano.</div>
+            <div id="musicCoordinates"></div><div id="musicCoordinatesLegend" class="coordinate-legend"></div>
+            <div class="coordinate-note">Opposti nel disegno: Grunge ↔ Pop · Alternative ↔ Dance · Rock ↔ Elettronica · Punk ↔ Metal. Non sono opposizioni musicologiche. Senza fonte verificata il punto non viene inventato.</div></div>
+          <div class="coordinate-panel"><h4>Testo · stile della scrittura</h4><div class="mini">Indici riproducibili da versi, pronomi, domande e lunghezza dei versi.</div>
+            <div id="textCoordinates"></div><div id="textCoordinatesLegend" class="coordinate-legend"></div>
+            <div class="coordinate-note">Opposti: Dialogico ↔ Descrittivo · Personale ↔ Impersonale · Ripetitivo ↔ Variato · Versi brevi ↔ Versi lunghi. Gli indici sono <em>euristici</em>: non misurano emozioni né il suono.</div></div>
+        </div>
+      </section>
       <section class="compare-card" id="compareSection"><h3>Confronto delle strutture</h3><p>La lettura testuale usa la struttura delle parole e dei versi. Genere e contesto musicale, quando disponibili, vengono ricercati separatamente su Wikipedia. Le percentuali sono calcolate sul testo analizzato. “Versi duplicati” = versi in più rispetto alle righe distinte. “Copertura” = parole appartenenti ad almeno una sequenza ripetuta.</p><div id="compareTable"></div></section>
       <div class="legend" id="diagramLegend" aria-label="Legenda"><span><i style="background:#507e9b"></i>Parole e sequenze ripetute</span><span><i style="background:#d39955"></i>Versi identici</span><span><i style="background:#d39955;height:7px;width:7px;border-radius:50%"></i>Parole evidenziate</span></div>
       <div class="footer">Ispirato al metodo degli <em>arc diagrams</em> di Martin Wattenberg, “The Shape of Song” (2001). I grafici vengono calcolati nel browser. Le interpretazioni stilistiche sono indicative e si basano su ripetizioni, lessico e forma dei versi. I testi incollati restano nel browser. Soltanto titolo e artista vengono inviati a Wikipedia per cercare genere e contesto del brano, quando la connessione è disponibile. Usa testi di cui hai i diritti di utilizzo.</div>
@@ -294,7 +327,7 @@ Il mare torna sempre`;
 const DEFAULT={songs:[{id:'song-example-a',title:'Orbita',artist:'Esempio originale A',lyrics:SAMPLE_ORBITA,keywordsDisabled:[]}, {id:'song-example-b',title:'Maree',artist:'Esempio originale B',lyrics:SAMPLE_MAREE,keywordsDisabled:[]}],selected:'song-example-a',mode:'compare',opts:{minWords:1,maxArcs:400,theme:'paper',lines:true,phrases:true,skipVocals:false,labels:true}};
 const KEYS=['#cd9465','#76adc1','#a38ccb','#81b6a6','#db987a','#b9aa76','#a2bac9','#cca3be','#9caf7c','#88a8bc'];
 let state;
-try{const current=localStorage.getItem('shape-lyrics-studio-v8')||localStorage.getItem('shape-lyrics-studio-v7')||localStorage.getItem('shape-lyrics-studio-v6')||localStorage.getItem('shape-lyrics-studio-v4');const previousV3=localStorage.getItem('shape-lyrics-studio-v3');const older=localStorage.getItem('shape-lyrics-studio-v2')||localStorage.getItem('shape-lyrics-studio-v1');const data=JSON.parse(current||previousV3||older||'null');state=validProject(data)?data:structuredClone(DEFAULT);if(!current&&!previousV3){state.opts.skipVocals=false;if(older&&validProject(data))state.opts.maxArcs=400}}catch{state=structuredClone(DEFAULT)}
+try{const current=localStorage.getItem('shape-lyrics-studio-v9')||localStorage.getItem('shape-lyrics-studio-v8')||localStorage.getItem('shape-lyrics-studio-v7')||localStorage.getItem('shape-lyrics-studio-v6')||localStorage.getItem('shape-lyrics-studio-v4');const previousV3=localStorage.getItem('shape-lyrics-studio-v3');const older=localStorage.getItem('shape-lyrics-studio-v2')||localStorage.getItem('shape-lyrics-studio-v1');const data=JSON.parse(current||previousV3||older||'null');state=validProject(data)?data:structuredClone(DEFAULT);if(!current&&!previousV3){state.opts.skipVocals=false;if(older&&validProject(data))state.opts.maxArcs=400}}catch{state=structuredClone(DEFAULT)}
 state.opts={...structuredClone(DEFAULT.opts),...state.opts,minWords:1};
 state.opts.maxArcs=Math.max(40,Math.min(400,Number(state.opts.maxArcs)||400));
 if(!['paper','night','colorato'].includes(state.opts.theme))state.opts.theme='paper';
@@ -304,14 +337,14 @@ let toastTimer=null, updateTimer=null, lastCharts=[];
 const expandedInsights=new Set();
 const researchCache=new Map();
 const researchTimers=new Map();
-const WikipediaGenres=[['alternative metal','Alternative metal'],['alternative rock','Rock alternativo'],['pop punk','Pop punk'],['post-punk','Post-punk'],['punk rock','Punk rock'],['indie rock','Indie rock'],['garage rock','Garage rock'],['hard rock','Hard rock'],['soft rock','Soft rock'],['progressive rock','Rock progressivo'],['psychedelic rock','Rock psichedelico'],['folk rock','Folk rock'],['blues rock','Blues rock'],['gothic rock','Rock gotico'],['experimental rock','Rock sperimentale'],['art rock','Art rock'],['pop rock','Pop rock'],['grunge','Grunge'],['post-grunge','Post-grunge'],['new wave','New wave'],['heavy metal','Heavy metal'],['nu metal','Nu metal'],['thrash metal','Thrash metal'],['synth-pop','Synth-pop'],['electropop','Electropop'],['dream pop','Dream pop'],['britpop','Britpop'],['shoegaze','Shoegaze'],['emo','Emo'],['hip hop','Hip hop'],['rap rock','Rap rock'],['trip hop','Trip hop'],['indie pop','Indie pop'],['power pop','Power pop'],['r&b','R&B'],['reggae','Reggae'],['electronica','Elettronica'],['industrial rock','Industrial rock'],['rock','Rock'],['punk','Punk'],['pop','Pop'],['jazz','Jazz'],['blues','Blues'],['folk','Folk'],['country','Country'],['disco','Disco'],['soul','Soul']];
+const WikipediaGenres=[['alternative metal','Alternative metal'],['alternative rock','Rock alternativo'],['pop punk','Pop punk'],['post-punk','Post-punk'],['punk rock','Punk rock'],['indie rock','Indie rock'],['garage rock','Garage rock'],['hard rock','Hard rock'],['soft rock','Soft rock'],['progressive rock','Rock progressivo'],['psychedelic rock','Rock psichedelico'],['folk rock','Folk rock'],['blues rock','Blues rock'],['gothic rock','Rock gotico'],['experimental rock','Rock sperimentale'],['art rock','Art rock'],['pop rock','Pop rock'],['grunge','Grunge'],['post-grunge','Post-grunge'],['new wave','New wave'],['heavy metal','Heavy metal'],['nu metal','Nu metal'],['thrash metal','Thrash metal'],['synth-pop','Synth-pop'],['electropop','Electropop'],['dream pop','Dream pop'],['britpop','Britpop'],['shoegaze','Shoegaze'],['emo','Emo'],['hip hop','Hip hop'],['rap rock','Rap rock'],['trip hop','Trip hop'],['indie pop','Indie pop'],['power pop','Power pop'],['r&b','R&B'],['reggae','Reggae'],['electronica','Elettronica'],['dance-pop','Dance pop'],['dance','Dance'],['house music','House'],['electronic','Elettronica'],['industrial rock','Industrial rock'],['rock','Rock'],['punk','Punk'],['pop','Pop'],['jazz','Jazz'],['blues','Blues'],['folk','Folk'],['country','Country'],['disco','Disco'],['soul','Soul']];
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmt=n=>new Intl.NumberFormat('it-IT',{maximumFractionDigits:0}).format(n);
 const percent=n=>(100*n).toLocaleString('it-IT',{maximumFractionDigits:1})+'%';
 function notify(message){const el=$('toast');el.textContent=message;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),4000)}
 function validProject(x){return x&&Array.isArray(x.songs)&&x.songs.length>=0&&x.songs.length<=12&&x.songs.every(s=>typeof s.title==='string'&&typeof s.artist==='string'&&typeof s.lyrics==='string'&&typeof s.id==='string'&&(!('keywordsDisabled' in s)||Array.isArray(s.keywordsDisabled)))&&x.opts&&typeof x.mode==='string'&&typeof x.selected==='string'}
-function persist(){try{localStorage.setItem('shape-lyrics-studio-v8',JSON.stringify(state))}catch{}}
+function persist(){try{localStorage.setItem('shape-lyrics-studio-v9',JSON.stringify(state))}catch{}}
 function currentSong(){return state.songs.find(s=>s.id===state.selected)||state.songs[0]}
 function colorFor(i){return OVERLAY_COLORS[i%OVERLAY_COLORS.length]}
 function wordParts(s){return (String(s).normalize('NFKC').toLocaleLowerCase('en-US').match(/[\p{L}\p{N}]+(?:['’][\p{L}\p{N}]+)*/gu)||[]).map(w=>w.replace(/’/g,"'"))}
@@ -680,6 +713,7 @@ function insightHtml(insight,cls='chart-insight',key=''){
     </div></details>`;
 }
 function updateResearchUI(){
+  renderCoordinates();
   // Aggiorna il solo pannello: non ricostruire SVG e non chiudere le descrizioni aperte.
   for(const {song,data} of lastCharts){const card=[...document.querySelectorAll('.chartcard')].find(el=>el.dataset.song===song.id);if(!card)continue;
     const old=card.querySelector('[data-insight-key]');if(!old)continue;
@@ -785,6 +819,112 @@ function renderOverlaySvg(data,opts,includeInsight=false){
     ${includeInsight?svgInsight(compareInsight(used),footerY+40,c):''}
   </svg>`;
 }
+// Coordinate polari condivise: nessuna classificazione musicale viene dedotta dal testo.
+const GENRE_POLES=[
+  {label:'Grunge',angle:-90},{label:'Alternative',angle:-45},
+  {label:'Rock',angle:0},{label:'Punk',angle:45},
+  {label:'Pop',angle:90},{label:'Dance',angle:135},
+  {label:'Elettronica',angle:180},{label:'Metal',angle:225}
+];
+const TEXT_POLES=[
+  {label:'Dialogico',angle:-90},{label:'Personale',angle:-45},
+  {label:'Ripetitivo',angle:0},{label:'Versi brevi',angle:45},
+  {label:'Descrittivo',angle:90},{label:'Impersonale',angle:135},
+  {label:'Variato',angle:180},{label:'Versi lunghi',angle:225}
+];
+const clamp=(x,a=-1,b=1)=>Math.max(a,Math.min(b,x));
+function genreCategory(term){
+  const s=fold(term);
+  if(/grunge/.test(s))return 'Grunge';
+  if(/alternativ|indie rock|shoegaze|emo|art rock|experimental rock|dream pop|britpop/.test(s))return 'Alternative';
+  if(/metal|thrash|nu metal/.test(s))return 'Metal';
+  if(/punk/.test(s))return 'Punk';
+  if(/electron|elettron|synth|industrial|new wave/.test(s))return 'Elettronica';
+  if(/disco|dance|house|techno/.test(s))return 'Dance';
+  if(/pop|r&b|soul/.test(s))return 'Pop';
+  if(/rock|blues|folk|country/.test(s))return 'Rock';
+  return null;
+}
+function musicPosition(song){
+  const meta=webMetadata(song),genres=meta.status==='ok'?(meta.genre||[]):[];
+  const categories=[...new Set(genres.map(genreCategory).filter(Boolean))];
+  if(!categories.length)return null;
+  const v=categories.map(cat=>GENRE_POLES.find(p=>p.label===cat));
+  const X=v.reduce((s,p)=>s+Math.cos(p.angle*Math.PI/180),0)/v.length;
+  const Y=v.reduce((s,p)=>s+Math.sin(p.angle*Math.PI/180),0)/v.length;
+  // Il raggio esprime la coerenza geometrica delle etichette, NON una probabilità.
+  return {x:X*.78,y:Y*.78,desc:genres.join(', '),source:meta.url};
+}
+function textPosition(meta){
+  if(!meta.total||!meta.lineCount)return null;
+  const p=styleProfile(meta),words=meta.doc.words.map(w=>w.word),N=Math.max(1,words.length);
+  const ego=words.filter(w=>['i','me','my','mine','im',"i'm",'io','mi','mio','mia','noi','we','our'].includes(w)).length/N;
+  const toYou=words.filter(w=>['you','your','yours','tu','te','ti','voi'].includes(w)).length/N;
+  const q=p.questionLines/meta.lineCount;
+  const repeat=clamp(2*Math.min(1,p.dup/.55)-1);
+  const dialog=clamp(2*Math.min(1,q*2.7+toYou*9)-1);
+  const person=clamp(2*Math.min(1,ego/.08)-1);
+  const short=clamp((9-p.median)/7);
+  // Quattro contrasti su direzioni fisse, ciascuno misurato con un indice  -1..+1.
+  const axes=[{angle:0,v:repeat},{angle:-90,v:dialog},{angle:-45,v:person},{angle:45,v:short}];
+  const x=.9*axes.reduce((s,a)=>s+a.v*Math.cos(a.angle*Math.PI/180),0)/4;
+  const y=.9*axes.reduce((s,a)=>s+a.v*Math.sin(a.angle*Math.PI/180),0)/4;
+  return {x,y,desc:`Versi duplicati ${percent(p.dup)} · Pronomi in prima persona ${percent(ego)} · Domande ${p.questionLines} · Mediana ${p.median} parole/verso`};
+}
+function coordinateSvg(kind,songs){
+  const poles=kind==='music'?GENRE_POLES:TEXT_POLES, cx=260,cy=260,R=146;
+  const palette=state.opts.theme==='paper'?{bg:'#f8f9f6',ink:'#263b4b',muted:'#50687b',circle:'#bccbd4',line:'#cddbe2',core:'#759bb3'}:{bg:'#0b1a28',ink:'#e9e7df',muted:'#a7bbc9',circle:'#35566b',line:'#28475e',core:'#98b6c7'};
+  const lineSet=poles.slice(0,4).map(p=>{
+    const a=p.angle*Math.PI/180,dx=Math.cos(a)*R,dy=Math.sin(a)*R;
+    return `<path d="M ${(cx-dx).toFixed(1)} ${(cy-dy).toFixed(1)} L ${(cx+dx).toFixed(1)} ${(cy+dy).toFixed(1)}" stroke="${palette.line}" stroke-width="1" stroke-dasharray="3 5"/>`;
+  }).join('');
+  const ringSet=[.25,.5,.75,1].map(a=>`<circle cx="${cx}" cy="${cy}" r="${R*a}" fill="none" stroke="${palette.circle}" stroke-width="${a===1?1.3:.85}" opacity=".85"/>`).join('');
+  const polesSvg=poles.map(p=>{
+    const a=p.angle*Math.PI/180,x=cx+Math.cos(a)*205,y=cy+Math.sin(a)*205;
+    return `<text x="${x.toFixed(1)}" y="${(y+4).toFixed(1)}" font-family="Arial,sans-serif" text-anchor="middle" font-size="${p.label.length>11?10:12}" font-weight="700" fill="${palette.ink}">${esc(p.label)}</text>`;
+  }).join('');
+  const plotted=songs.map(({song,index,data})=>({song,index,position:kind==='music'?musicPosition(song):textPosition(data)})).filter(x=>x.position);
+  const points=plotted.map(({song,index,position},i)=>{
+    const x=cx+position.x*R,y=cy+position.y*R,col=overlayColor(index);
+    return `<g class="coord-point" aria-label="${esc(song.title)}: ${esc(position.desc)}"><title>${esc(song.title)} — ${esc(song.artist)}: ${esc(position.desc)}</title><circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="10.5" fill="${col}" fill-opacity=".14" stroke="${col}" stroke-opacity=".50" stroke-width="1.6"/><circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="6.8" fill="${col}" stroke="${palette.bg}" stroke-width="1.3"/><text x="${x.toFixed(2)}" y="${(y+2.7).toFixed(2)}" font-family="Arial,sans-serif" text-anchor="middle" font-weight="900" font-size="7.4" fill="#102332">${i+1}</text></g>`;
+  }).join('');
+  const caption=kind==='music'?'GENERE DOCUMENTATO':'CARATTERISTICHE DEL TESTO';
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 535" width="520" height="535" role="img" aria-label="Mappa circolare ${kind==='music'?'dei generi musicali':'dello stile del testo'} con ${plotted.length} canzoni">
+    <rect width="520" height="535" rx="12" fill="${palette.bg}"/>
+    <text x="24" y="30" font-size="10" font-family="Arial,sans-serif" font-weight="750" letter-spacing="2.8" fill="${palette.muted}">${caption}</text>
+    ${ringSet}${lineSet}${polesSvg}
+    <circle cx="${cx}" cy="${cy}" r="2.8" fill="${palette.core}"/>
+    ${points}
+    <text x="260" y="516" text-anchor="middle" font-size="11" font-family="Arial,sans-serif" fill="${palette.muted}">${plotted.length} ${plotted.length===1?'brano posizionato':'brani posizionati'} · ${songs.length} in analisi</text>
+  </svg>`;
+}
+function renderCoordinates(){
+  const visible=lastCharts.filter(x=>x.data.total>0);
+  for(const kind of ['music','text']){
+    const svg=coordinateSvg(kind,visible);$(kind+'Coordinates').innerHTML=svg;
+    const plotted=visible.filter(x=>kind==='music'?musicPosition(x.song):textPosition(x.data));
+    $(kind+'CoordinatesLegend').innerHTML=plotted.length?plotted.map(({song,index},i)=>`<span><i style="background:${overlayColor(index)}"></i>${i+1}. ${esc(song.title||'Senza titolo')}${kind==='music'&&webMetadata(song).url?` · <a href="${esc(webMetadata(song).url)}" target="_blank" rel="noopener noreferrer">fonte</a>`:''}</span>`).join('')
+       :`<span>${kind==='music'?'Nessun genere verificato: inserisci titolo e artista reali e attendi la ricerca Wikipedia.':'Incolla un testo per mostrare le coordinate.'}</span>`;
+  }
+}
+function exportMaps(kind){
+  const svgs=['musicCoordinates','textCoordinates'].map(id=>$(id).querySelector('svg'));
+  if(svgs.some(x=>!x)){notify('Nessuna mappa da esportare.');return}
+  const [a,b]=svgs.map(svg=>svg.outerHTML);
+  const bg=state.opts.theme==='paper'?'#f8f9f6':'#0b1a28';
+  const nameLegend=(which,offset)=>lastCharts.filter(x=>x.data.total>0).filter(x=>which==='music'?musicPosition(x.song):textPosition(x.data)).map(({song,index},i)=>{
+    const x=offset+26+(i%2)*246,y=567+Math.floor(i/2)*21;
+    return `<circle cx="${x}" cy="${y-4}" r="5" fill="${overlayColor(index)}"/><text x="${x+11}" y="${y}" font-family="Arial,sans-serif" font-size="11.5" fill="${state.opts.theme==='paper'?'#263b4b':'#e9e7df'}">${i+1}. ${esc((song.title||'Senza titolo').slice(0,26))}</text>`;
+  }).join('');
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="1060" height="705" viewBox="0 0 1060 705"><rect width="1060" height="705" fill="${bg}"/><g>${a}</g><g transform="translate(540,0)">${b}</g>${nameLegend('music',0)}${nameLegend('text',540)}</svg>`;
+  // SVG annidati sono validi; il contenuto è interamente generato dal browser.
+  if(kind==='svg'){download(new Blob([svg],{type:'image/svg+xml;charset=utf-8'}),'Shape_of_Lyrics_coordinate_musica_testo.svg');notify('Coordinate SVG esportate');return}
+  const canvas=document.createElement('canvas');canvas.width=3180;canvas.height=2115;
+  const url=URL.createObjectURL(new Blob([svg],{type:'image/svg+xml;charset=utf-8'}));const img=new Image();
+  img.onload=()=>{try{canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);canvas.toBlob(file=>{if(file){download(file,'Shape_of_Lyrics_coordinate_musica_testo.png');notify('Coordinate PNG esportate')}else notify('PNG non disponibile')},'image/png')}finally{URL.revokeObjectURL(url)}};
+  img.onerror=()=>{URL.revokeObjectURL(url);notify('Errore di esportazione PNG: prova SVG')};img.src=url;
+}
+
 function renderTabs(){
   const holder=$('trackTabs');
   holder.innerHTML=state.songs.length?state.songs.map((s,i)=>`<div class="trackrow">
@@ -838,6 +978,7 @@ function renderCharts(){
     const rows=lastCharts.map(({song,index,data})=>`<tr><td><span class="trackname"><i class="trackdot" style="background:${colorFor(index)}"></i>${esc(song.title||'Senza titolo')}</span></td><td>${fmt(data.lineCount)}</td><td>${fmt(data.total)}</td><td>${percent(data.lineCount?data.duplicateLines/data.lineCount:0)}</td><td>${percent(data.coverage)}</td><td>${fmt(data.arcs.length)}</td></tr>`).join('');
     $('compareTable').innerHTML=`<table><thead><tr><th>Canzone</th><th>Versi</th><th>Parole</th><th>Versi duplicati</th><th>Copertura</th><th>Cerchi visibili</th></tr></thead><tbody>${rows}</tbody></table>`;
   }
+  renderCoordinates();
   for(const song of visible)scheduleResearch(song);
 }
 function refreshAll(){renderTabs();renderEditor();renderOptions();renderCharts()}
@@ -902,7 +1043,7 @@ function downloadCsv(){if(!lastCharts.length){notify('Nessun brano disponibile.'
   const rows=[['brano','artista','tipo_legame','sequenza_identica','posizione_a_parole','posizione_b_parole','posizione_a_%','posizione_b_%','lunghezza_parole','note']];
   for(const {song,data} of lastCharts){for(const a of data.arcs)rows.push([song.title,song.artist,a.type,a.text,a.start.toFixed(2),a.end.toFixed(2),(a.start*100/Math.max(1,data.total)).toFixed(3),(a.end*100/Math.max(1,data.total)).toFixed(3),a.len,'Posizioni del centro delle occorrenze, in token']);}
   download(new Blob(['\ufeff'+rows.map(x=>x.map(csvQ).join(';')).join('\r\n')],{type:'text/csv;charset=utf-8'}),'Shape_of_Lyrics_legami.csv');notify('CSV dei collegamenti esportato')}
-function saveProject(){download(new Blob([JSON.stringify({version:8,...state},null,2)],{type:'application/json;charset=utf-8'}),'Shape_of_Lyrics_progetto.json');notify('Progetto salvato')}
+function saveProject(){download(new Blob([JSON.stringify({version:9,...state},null,2)],{type:'application/json;charset=utf-8'}),'Shape_of_Lyrics_progetto.json');notify('Progetto salvato')}
 async function loadProject(file){try{const data=JSON.parse(await file.text());if(!validProject(data))throw Error('Struttura non riconosciuta');
   const opts={...structuredClone(DEFAULT.opts),...data.opts,minWords:1};opts.maxArcs=Math.max(40,Math.min(400,Number(opts.maxArcs)||400));opts.theme=['night','paper','colorato'].includes(opts.theme)?opts.theme:'paper';
   state={songs:data.songs.map(s=>({id:s.id,title:s.title,artist:s.artist,lyrics:s.lyrics,keywordsDisabled:Array.isArray(s.keywordsDisabled)?s.keywordsDisabled:[]})),selected:data.selected,mode:data.mode==='single'?'single':'compare',opts};
@@ -939,6 +1080,8 @@ function connectEvents(){
   $('projectInput').addEventListener('change',async e=>{if(e.target.files[0])await loadProject(e.target.files[0]);e.target.value='' });
   $('btnOverlayPng').addEventListener('click',()=>downloadPng(null,true));
   $('btnOverlaySvg').addEventListener('click',()=>downloadSvg(null,true));
+  $('btnMapsSvg').addEventListener('click',()=>exportMaps('svg'));
+  $('btnMapsPng').addEventListener('click',()=>exportMaps('png'));
   document.addEventListener('toggle',e=>{const d=e.target.closest?.('details[data-insight-key]');if(!d)return;const key=d.dataset.insightKey;if(d.open)expandedInsights.add(key);else expandedInsights.delete(key)},true);
   document.addEventListener('click',e=>{const b=e.target.closest?.('[data-retry-research]');if(!b)return;const card=b.closest('[data-song]');if(!card)return;const song=state.songs.find(x=>x.id===card.dataset.song);if(song){researchCache.delete(researchKey(song));scheduleResearch(song,true);updateResearchUI()}});
   $('chartGrid').addEventListener('click',e=>{
